@@ -1,4 +1,4 @@
-create or replace function tvtime_upsert_seasons_and_episodes(
+create or replace function tvtime_update_seasons(
   p_show_id uuid,
   p_seasons jsonb,
   p_episodes jsonb
@@ -39,4 +39,5 @@ begin
 end;
 $$;
 
-revoke execute on function tvtime_upsert_seasons_and_episodes(uuid, jsonb, jsonb) from public;
+revoke execute on function tvtime_update_seasons(uuid, jsonb, jsonb) from public, anon, service_role;
+grant execute on function tvtime_update_seasons(uuid, jsonb, jsonb) to authenticated;

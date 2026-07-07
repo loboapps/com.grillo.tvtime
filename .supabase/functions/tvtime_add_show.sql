@@ -37,7 +37,7 @@ begin
     synced_at = now()
   returning id into v_show_id;
 
-  perform tvtime_upsert_seasons_and_episodes(v_show_id, p_seasons, p_episodes);
+  perform tvtime_update_seasons(v_show_id, p_seasons, p_episodes);
 end;
 $$;
 
