@@ -1,6 +1,7 @@
 # Original entries
 /_ref
 /docs
+/.superpowers
 /.claude/settings.local.json
 /.mcp.json
 /.env

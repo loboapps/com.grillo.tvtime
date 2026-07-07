@@ -134,3 +134,12 @@ export interface SeasonAccordionProps {
   trackable: boolean
   onToggleEpisode: (episodeId: string, currentlyWatched: boolean) => void
 }
+
+export interface ToastProps {
+  message: string
+  variant: 'error' | 'success'
+}
+
+export interface SkeletonProps {
+  className?: string
+}
