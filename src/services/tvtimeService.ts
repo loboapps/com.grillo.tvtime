@@ -35,6 +35,12 @@ export const tvtimeService = {
     return data as number[]
   },
 
+  async loadTrackedShowIds(): Promise<number[]> {
+    const { data, error } = await supabase.rpc('tvtime_load_tracked_show_ids')
+    if (error) throw error
+    return data as number[]
+  },
+
   async searchShows(query: string): Promise<TmdbSearchResult[]> {
     const data = await invokeTmdb<{ results: TmdbSearchResult[] }>({ action: 'search', query })
     return data.results
