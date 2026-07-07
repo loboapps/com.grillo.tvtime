@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { icons } from '@/utils/icons'
 import { tvtimeService, tvtimeWriteService } from '@/services/tvtimeService'
 import { formatActiveLabel } from '@/utils/showStatusLabel'
@@ -47,19 +48,7 @@ export function SearchPage() {
   }
 
   async function handleAdd(result: SearchResultWithDetails, status: ShowStatus) {
-    const episodes = await tvtimeService.fetchAllEpisodes(result.details.id, result.details.seasons)
-    await tvtimeWriteService.addShow({
-      tmdbId: result.details.id,
-      name: result.details.name,
-      posterPath: result.details.poster_path,
-      backdropPath: result.details.backdrop_path,
-      tmdbStatus: result.details.status,
-      numberOfSeasons: result.details.number_of_seasons,
-      numberOfEpisodes: result.details.number_of_episodes,
-      userStatus: status,
-      seasons: result.details.seasons,
-      episodes,
-    })
+    await tvtimeWriteService.addShowFromDetails(result.details, status)
     setAddedIds((prev) => new Set(prev).add(result.id))
     setPickingShow(null)
   }
@@ -83,26 +72,34 @@ export function SearchPage() {
       <ul>
         {results.map((r) => (
           <li key={r.id} className="flex items-center gap-3 px-4 py-3 border-b border-tvtime-700">
-            {r.poster_path && (
-              <img
-                src={`https://image.tmdb.org/t/p/w185${r.poster_path}`}
-                alt={r.name}
-                className="w-12 h-16 object-cover rounded"
-              />
-            )}
-            <div className="flex-1">
-              <p className="text-tvtime-100 font-semibold">{r.name}</p>
-              <p className="text-tvtime-300 text-sm">
-                {r.details.number_of_seasons} temp. · {r.details.number_of_episodes} eps ·{' '}
-                {formatActiveLabel(r.details.status)}
-              </p>
-            </div>
+            <Link to={`/show/${r.id}`} className="flex items-center gap-3 flex-1 min-w-0">
+              {r.poster_path && (
+                <img
+                  src={`https://image.tmdb.org/t/p/w185${r.poster_path}`}
+                  alt={r.name}
+                  className="w-12 h-16 object-cover rounded"
+                />
+              )}
+              <div className="flex-1 min-w-0">
+                <p className="text-tvtime-100 font-semibold truncate">{r.name}</p>
+                <p className="text-tvtime-300 text-sm">
+                  {r.details.number_of_seasons} temp. · {r.details.number_of_episodes} eps ·{' '}
+                  {formatActiveLabel(r.details.status)}
+                </p>
+              </div>
+            </Link>
             <button
               disabled={addedIds.has(r.id)}
               onClick={() => setPickingShow(r)}
-              className="text-tvtime-900 bg-tvtime-100 rounded-full px-3 py-1 text-sm font-semibold disabled:opacity-40"
+              className={`w-8 h-8 rounded-md flex items-center justify-center shrink-0 ${
+                addedIds.has(r.id) ? 'bg-tvtime-700' : 'bg-yellow-500'
+              } disabled:opacity-60`}
             >
-              {addedIds.has(r.id) ? 'Adicionada' : 'Adicionar'}
+              {addedIds.has(r.id) ? (
+                <icons.check size={18} className="text-tvtime-300" />
+              ) : (
+                <icons.plus size={18} className="text-tvtime-900" />
+              )}
             </button>
           </li>
         ))}
