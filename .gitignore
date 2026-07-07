@@ -1,0 +1,9 @@
+/_ref
+/docs
+.DS_Store
+/node_modules
+/.claude/settings.local.json
+/.mcp.json
+/.env
+/CLAUDE.md
+/dist
