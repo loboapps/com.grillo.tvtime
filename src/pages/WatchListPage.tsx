@@ -1,6 +1,9 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { ShowRow } from '@/components/ShowRow'
+import { Toast } from '@/components/Toast'
+import { Skeleton } from '@/components/Skeleton'
+import { useToast } from '@/utils/useToast'
 import { tvtimeService, tvtimeWriteService } from '@/services/tvtimeService'
 import type { Watchlist, WatchlistEntry } from '@/types/tvtime'
 
@@ -14,17 +17,39 @@ async function syncStaleShows(): Promise<void> {
   const staleIds = await tvtimeService.loadStaleShowIds()
   await Promise.all(
     staleIds.map(async (tmdbId) => {
-      const details = await tvtimeService.getShowDetails(tmdbId)
-      const episodes = await tvtimeService.fetchAllEpisodes(tmdbId, details.seasons)
-      await tvtimeWriteService.syncShow(
-        tmdbId,
-        details.status,
-        details.number_of_seasons,
-        details.number_of_episodes,
-        details.seasons,
-        episodes,
-      )
+      try {
+        const details = await tvtimeService.getShowDetails(tmdbId)
+        const episodes = await tvtimeService.fetchAllEpisodes(tmdbId, details.seasons)
+        await tvtimeWriteService.syncShow(
+          tmdbId,
+          details.status,
+          details.number_of_seasons,
+          details.number_of_episodes,
+          details.seasons,
+          episodes,
+        )
+      } catch (err) {
+        // One show's TMDB sync failing must never block the rest of the list.
+        console.error(`Failed to sync show ${tmdbId}:`, err)
+      }
     }),
+  )
+}
+
+function WatchListSkeleton() {
+  return (
+    <div className="min-h-screen bg-tvtime-900 pb-20">
+      {[0, 1, 2, 3].map((i) => (
+        <div key={i} className="flex gap-3 px-4 py-3 border-b border-tvtime-700">
+          <Skeleton className="w-16 h-24" />
+          <div className="flex-1 space-y-2 py-1">
+            <Skeleton className="h-4 w-1/2" />
+            <Skeleton className="h-3 w-1/3" />
+            <Skeleton className="h-4 w-2/3" />
+          </div>
+        </div>
+      ))}
+    </div>
   )
 }
 
@@ -37,8 +62,9 @@ export function WatchListPage() {
     not_seen_in_a_while: null,
     want_to_see: null,
   })
+  const { toast, showToast } = useToast()
 
-  const reload = useCallback(async () => {
+  const load = useCallback(async () => {
     try {
       await syncStaleShows()
       const data = await tvtimeService.loadWatchlist()
@@ -50,9 +76,22 @@ export function WatchListPage() {
     }
   }, [])
 
+  // Re-fetches only the watchlist itself, without re-running the TMDB stale-sync —
+  // used after marking an episode watched, so one swipe doesn't re-trigger a sync
+  // pass across every stale show.
+  const refreshWatchlist = useCallback(async () => {
+    try {
+      const data = await tvtimeService.loadWatchlist()
+      setWatchlist(data)
+    } catch (err) {
+      console.error(err)
+      showToast('Não foi possível atualizar a lista.')
+    }
+  }, [showToast])
+
   useEffect(() => {
-    reload()
-  }, [reload])
+    load()
+  }, [load])
 
   useEffect(() => {
     if (!watchlist) return
@@ -89,8 +128,13 @@ export function WatchListPage() {
   }, [watchlist])
 
   async function handleWatch(entry: WatchlistEntry) {
-    await tvtimeWriteService.watchEpisode(entry.episode_id)
-    await reload()
+    try {
+      await tvtimeWriteService.watchEpisode(entry.episode_id)
+      await refreshWatchlist()
+    } catch (err) {
+      console.error(err)
+      showToast('Não foi possível marcar como visto.')
+    }
   }
 
   if (error) {
@@ -99,7 +143,7 @@ export function WatchListPage() {
         <p className="text-tvtime-100 font-semibold mb-2">Algo deu errado</p>
         <p className="text-tvtime-300 text-sm mb-6">{error}</p>
         <button
-          onClick={() => reload()}
+          onClick={() => load()}
           className="bg-tvtime-100 text-tvtime-900 rounded-full px-4 py-2 text-sm font-semibold"
         >
           Tentar novamente
@@ -109,7 +153,7 @@ export function WatchListPage() {
   }
 
   if (!watchlist) {
-    return <div className="min-h-screen bg-tvtime-900" />
+    return <WatchListSkeleton />
   }
 
   const isEmpty =
@@ -152,6 +196,7 @@ export function WatchListPage() {
           ))}
         </section>
       ))}
+      {toast && <Toast message={toast.message} variant={toast.variant} />}
     </div>
   )
 }
