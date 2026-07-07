@@ -39,6 +39,21 @@ export function ShowDetailPage() {
     }
   }, [id])
 
+  // Refreshes only our DB-tracked state (seasons/episodes/watched flags), not the
+  // live TMDB fetch or the loading gate — a full load() here would unmount
+  // SeasonAccordion (collapsing every open season) and re-fetch TMDB per season
+  // on every single episode toggle.
+  const refreshDetail = useCallback(async () => {
+    try {
+      const showDetail = await tvtimeService.loadShow(id)
+      setDetail(showDetail)
+      setError(null)
+    } catch (err) {
+      console.error(err)
+      setError('Não foi possível carregar esta série.')
+    }
+  }, [id])
+
   useEffect(() => {
     load()
   }, [load])
@@ -49,14 +64,14 @@ export function ShowDetailPage() {
     } else {
       await tvtimeWriteService.watchEpisode(episodeId)
     }
-    await load()
+    await refreshDetail()
   }
 
   async function handleAdd(status: ShowStatus) {
     if (!tmdbDetails) return
     await tvtimeWriteService.addShowFromDetails(tmdbDetails, status)
     setShowPicker(false)
-    await load()
+    await refreshDetail()
   }
 
   if (loading) {
