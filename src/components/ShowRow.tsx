@@ -1,4 +1,5 @@
 import { useRef, useState, type PointerEvent } from 'react'
+import { Link } from 'react-router-dom'
 import type { ShowRowProps } from '@/types/tvtime'
 
 const SWIPE_THRESHOLD = 80
@@ -49,7 +50,9 @@ export function ShowRow({ entry, onWatch }: ShowRowProps) {
           />
         )}
         <div className="flex-1 min-w-0">
-          <p className="text-tvtime-100 font-semibold truncate">{entry.name}</p>
+          <Link to={`/show/${entry.tmdb_id}`} className="text-tvtime-100 font-semibold truncate block">
+            {entry.name}
+          </Link>
           <p className="text-tvtime-300 text-xs">
             S{entry.season_number} | E{entry.episode_number}
             {entry.remaining > 0 && ` +${entry.remaining}`}
