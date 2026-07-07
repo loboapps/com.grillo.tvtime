@@ -14,3 +14,4 @@ as $$
 $$;
 
 grant execute on function tvtime_watch_episode(uuid, boolean) to authenticated;
+revoke execute on function tvtime_watch_episode(uuid, boolean) from public, anon;

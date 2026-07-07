@@ -27,3 +27,4 @@ end;
 $$;
 
 grant execute on function tvtime_sync_show(integer, text, integer, integer, jsonb, jsonb) to authenticated;
+revoke execute on function tvtime_sync_show(integer, text, integer, integer, jsonb, jsonb) from public, anon;

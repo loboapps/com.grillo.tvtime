@@ -42,3 +42,4 @@ end;
 $$;
 
 grant execute on function tvtime_add_show(integer, text, text, text, text, integer, integer, text, jsonb, jsonb) to authenticated;
+revoke execute on function tvtime_add_show(integer, text, text, text, text, integer, integer, text, jsonb, jsonb) from public, anon;

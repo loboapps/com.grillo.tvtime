@@ -8,3 +8,4 @@ as $$
 $$;
 
 grant execute on function tvtime_set_show_status(uuid, text) to authenticated;
+revoke execute on function tvtime_set_show_status(uuid, text) from public, anon;

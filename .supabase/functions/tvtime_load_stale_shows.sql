@@ -12,3 +12,4 @@ as $$
 $$;
 
 grant execute on function tvtime_load_stale_shows() to authenticated;
+revoke execute on function tvtime_load_stale_shows() from public, anon;

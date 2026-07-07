@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { icons } from '@/utils/icons'
 import { tvtimeService, tvtimeWriteService } from '@/services/tvtimeService'
 import { formatActiveLabel } from '@/utils/showStatusLabel'
@@ -12,21 +12,38 @@ export function SearchPage() {
   const [loading, setLoading] = useState(false)
   const [pickingShow, setPickingShow] = useState<SearchResultWithDetails | null>(null)
   const [addedIds, setAddedIds] = useState<Set<number>>(new Set())
+  const latestQueryRef = useRef('')
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  async function handleSearch(value: string) {
-    setQuery(value)
-    if (value.trim().length < 2) {
-      setResults([])
-      return
-    }
+  async function runSearch(value: string) {
     setLoading(true)
     const raw = await tvtimeService.searchShows(value)
     const sorted = sortSearchResultsByRelevance(raw, value)
     const withDetails = await Promise.all(
       sorted.slice(0, 20).map(async (r) => ({ ...r, details: await tvtimeService.getShowDetails(r.id) })),
     )
+    if (latestQueryRef.current !== value) return
     setResults(withDetails)
     setLoading(false)
+  }
+
+  function handleSearch(value: string) {
+    setQuery(value)
+    latestQueryRef.current = value
+
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current)
+    }
+
+    if (value.trim().length < 2) {
+      setResults([])
+      setLoading(false)
+      return
+    }
+
+    debounceRef.current = setTimeout(() => {
+      runSearch(value)
+    }, 300)
   }
 
   async function handleAdd(result: SearchResultWithDetails, status: ShowStatus) {

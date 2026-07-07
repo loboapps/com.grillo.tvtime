@@ -51,10 +51,12 @@ export const tvtimeService = {
     seasons: TmdbSeason[],
   ): Promise<(TmdbEpisode & { season_number: number })[]> {
     const episodesBySeason = await Promise.all(
-      seasons.map(async (season) => {
-        const episodes = await tvtimeService.getSeasonEpisodes(tmdbId, season.season_number)
-        return episodes.map((ep) => ({ ...ep, season_number: season.season_number }))
-      }),
+      seasons
+        .filter((season) => season.season_number !== 0)
+        .map(async (season) => {
+          const episodes = await tvtimeService.getSeasonEpisodes(tmdbId, season.season_number)
+          return episodes.map((ep) => ({ ...ep, season_number: season.season_number }))
+        }),
     )
     return episodesBySeason.flat()
   },

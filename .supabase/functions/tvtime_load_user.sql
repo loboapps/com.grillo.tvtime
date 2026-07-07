@@ -8,3 +8,4 @@ as $$
 $$;
 
 grant execute on function tvtime_load_user() to authenticated;
+revoke execute on function tvtime_load_user() from public, anon;

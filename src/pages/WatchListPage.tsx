@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { ShowRow } from '@/components/ShowRow'
 import { tvtimeService, tvtimeWriteService } from '@/services/tvtimeService'
@@ -30,20 +30,82 @@ async function syncStaleShows(): Promise<void> {
 
 export function WatchListPage() {
   const [watchlist, setWatchlist] = useState<Watchlist | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [currentSection, setCurrentSection] = useState<keyof Watchlist>('watch_next')
+  const sectionRefs = useRef<Record<keyof Watchlist, HTMLElement | null>>({
+    watch_next: null,
+    not_seen_in_a_while: null,
+    want_to_see: null,
+  })
 
   const reload = useCallback(async () => {
-    await syncStaleShows()
-    const data = await tvtimeService.loadWatchlist()
-    setWatchlist(data)
+    try {
+      await syncStaleShows()
+      const data = await tvtimeService.loadWatchlist()
+      setWatchlist(data)
+      setError(null)
+    } catch (err) {
+      console.error(err)
+      setError('Não foi possível carregar sua lista. Verifique sua conexão e tente novamente.')
+    }
   }, [])
 
   useEffect(() => {
     reload()
   }, [reload])
 
+  useEffect(() => {
+    if (!watchlist) return
+
+    const sections: (keyof Watchlist)[] = ['watch_next', 'not_seen_in_a_while', 'want_to_see']
+    const visible = new Map<keyof Watchlist, number>()
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          const key = entry.target.getAttribute('data-section') as keyof Watchlist | null
+          if (!key) continue
+          if (entry.isIntersecting) {
+            visible.set(key, entry.boundingClientRect.top)
+          } else {
+            visible.delete(key)
+          }
+        }
+
+        if (visible.size > 0) {
+          const topmost = [...visible.entries()].sort((a, b) => a[1] - b[1])[0][0]
+          setCurrentSection(topmost)
+        }
+      },
+      { rootMargin: '0px 0px -70% 0px', threshold: 0 },
+    )
+
+    for (const key of sections) {
+      const el = sectionRefs.current[key]
+      if (el) observer.observe(el)
+    }
+
+    return () => observer.disconnect()
+  }, [watchlist])
+
   async function handleWatch(entry: WatchlistEntry) {
     await tvtimeWriteService.watchEpisode(entry.episode_id)
     await reload()
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-tvtime-900 pb-20 flex flex-col items-center justify-center px-6 text-center">
+        <p className="text-tvtime-100 font-semibold mb-2">Algo deu errado</p>
+        <p className="text-tvtime-300 text-sm mb-6">{error}</p>
+        <button
+          onClick={() => reload()}
+          className="bg-tvtime-100 text-tvtime-900 rounded-full px-4 py-2 text-sm font-semibold"
+        >
+          Tentar novamente
+        </button>
+      </div>
+    )
   }
 
   if (!watchlist) {
@@ -73,11 +135,17 @@ export function WatchListPage() {
     <div className="min-h-screen bg-tvtime-900 pb-20">
       <div className="sticky top-0 z-10 bg-tvtime-900 py-3 flex justify-center">
         <span className="bg-tvtime-700 text-tvtime-100 text-sm font-semibold px-4 py-2 rounded-full">
-          WATCH NEXT
+          {SECTION_LABELS[currentSection]}
         </span>
       </div>
       {sections.map((key) => (
-        <section key={key}>
+        <section
+          key={key}
+          data-section={key}
+          ref={(el) => {
+            sectionRefs.current[key] = el
+          }}
+        >
           <h2 className="text-tvtime-300 text-xs font-bold px-4 py-2">{SECTION_LABELS[key]}</h2>
           {watchlist[key].map((entry) => (
             <ShowRow key={entry.episode_id} entry={entry} onWatch={handleWatch} />

@@ -91,3 +91,4 @@ select jsonb_build_object(
 $$;
 
 grant execute on function tvtime_load_watchlist() to authenticated;
+revoke execute on function tvtime_load_watchlist() from public, anon;
