@@ -3,6 +3,7 @@ import { icons } from '@/utils/icons'
 import { tvtimeService, tvtimeWriteService } from '@/services/tvtimeService'
 import { formatActiveLabel } from '@/utils/showStatusLabel'
 import { StatusPickerSheet } from '@/components/StatusPickerSheet'
+import { sortSearchResultsByRelevance } from '@/utils/sortSearchResults'
 import type { ShowStatus, SearchResultWithDetails } from '@/types/tvtime'
 
 export function SearchPage() {
@@ -20,8 +21,9 @@ export function SearchPage() {
     }
     setLoading(true)
     const raw = await tvtimeService.searchShows(value)
+    const sorted = sortSearchResultsByRelevance(raw, value)
     const withDetails = await Promise.all(
-      raw.slice(0, 20).map(async (r) => ({ ...r, details: await tvtimeService.getShowDetails(r.id) })),
+      sorted.slice(0, 20).map(async (r) => ({ ...r, details: await tvtimeService.getShowDetails(r.id) })),
     )
     setResults(withDetails)
     setLoading(false)
