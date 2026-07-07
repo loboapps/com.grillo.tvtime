@@ -4,6 +4,7 @@ import { BottomNav } from '@/components/BottomNav'
 import { LoginPage } from '@/pages/LoginPage'
 import { WatchListPage } from '@/pages/WatchListPage'
 import { SearchPage } from '@/pages/SearchPage'
+import { ShowDetailPage } from '@/pages/ShowDetailPage'
 
 export default function App() {
   const location = useLocation()
@@ -26,6 +27,14 @@ export default function App() {
           element={
             <PrivateRoute>
               <SearchPage />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/show/:tmdbId"
+          element={
+            <PrivateRoute>
+              <ShowDetailPage />
             </PrivateRoute>
           }
         />
