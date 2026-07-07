@@ -47,7 +47,8 @@ rows as (
     lw.last_watched_at,
     (ne.air_date is not null and ne.air_date >= current_date - interval '30 days') as is_new,
     jsonb_build_object(
-      'episode_id', ne.episode_id, 'show_id', sh.id, 'name', sh.name, 'poster_path', sh.poster_path,
+      'episode_id', ne.episode_id, 'show_id', sh.id, 'tmdb_id', sh.tmdb_id,
+      'name', sh.name, 'poster_path', sh.poster_path,
       'season_number', ne.season_number, 'episode_number', ne.episode_number,
       'episode_name', ne.name,
       'remaining', coalesce(pc.pending, 0) - (case when ne.is_aired then 1 else 0 end),
