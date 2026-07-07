@@ -5,7 +5,28 @@ import { tvtimeService, tvtimeWriteService } from '@/services/tvtimeService'
 import { buildStillPathLookup } from '@/utils/buildStillPathLookup'
 import { SeasonAccordion } from '@/components/SeasonAccordion'
 import { StatusPickerSheet } from '@/components/StatusPickerSheet'
+import { Toast } from '@/components/Toast'
+import { Skeleton } from '@/components/Skeleton'
+import { useToast } from '@/utils/useToast'
 import type { ShowDetail, ShowStatus, TmdbShowDetails } from '@/types/tvtime'
+
+function ShowDetailSkeleton() {
+  return (
+    <div className="min-h-screen bg-tvtime-900 pb-20">
+      <Skeleton className="w-full h-48 rounded-none" />
+      <div className="px-4 py-4 space-y-2">
+        <Skeleton className="h-6 w-2/3" />
+        <Skeleton className="h-4 w-1/3" />
+      </div>
+      <div className="px-4 space-y-3">
+        <Skeleton className="h-12 w-full" />
+        <Skeleton className="h-12 w-full" />
+      </div>
+    </div>
+  )
+}
+
+const LOAD_ERROR_MESSAGE = 'Não foi possível carregar esta série.'
 
 export function ShowDetailPage() {
   const { tmdbId } = useParams<{ tmdbId: string }>()
@@ -18,8 +39,15 @@ export function ShowDetailPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [showPicker, setShowPicker] = useState(false)
+  const { toast, showToast } = useToast()
+
+  const notFound = Number.isNaN(id)
 
   const load = useCallback(async () => {
+    if (notFound) {
+      setLoading(false)
+      return
+    }
     try {
       setLoading(true)
       const [showDetail, liveDetails] = await Promise.all([
@@ -33,11 +61,11 @@ export function ShowDetailPage() {
       setError(null)
     } catch (err) {
       console.error(err)
-      setError('Não foi possível carregar esta série.')
+      setError(LOAD_ERROR_MESSAGE)
     } finally {
       setLoading(false)
     }
-  }, [id])
+  }, [id, notFound])
 
   // Refreshes only our DB-tracked state (seasons/episodes/watched flags), not the
   // live TMDB fetch or the loading gate — a full load() here would unmount
@@ -50,7 +78,7 @@ export function ShowDetailPage() {
       setError(null)
     } catch (err) {
       console.error(err)
-      setError('Não foi possível carregar esta série.')
+      setError(LOAD_ERROR_MESSAGE)
     }
   }, [id])
 
@@ -59,23 +87,47 @@ export function ShowDetailPage() {
   }, [load])
 
   async function handleToggleEpisode(episodeId: string, currentlyWatched: boolean) {
-    if (currentlyWatched) {
-      await tvtimeWriteService.unwatchEpisode(episodeId)
-    } else {
-      await tvtimeWriteService.watchEpisode(episodeId)
+    try {
+      if (currentlyWatched) {
+        await tvtimeWriteService.unwatchEpisode(episodeId)
+      } else {
+        await tvtimeWriteService.watchEpisode(episodeId)
+      }
+      await refreshDetail()
+    } catch (err) {
+      console.error(err)
+      showToast('Não foi possível atualizar o episódio.')
     }
-    await refreshDetail()
   }
 
   async function handleAdd(status: ShowStatus) {
     if (!tmdbDetails) return
-    await tvtimeWriteService.addShowFromDetails(tmdbDetails, status)
-    setShowPicker(false)
-    await refreshDetail()
+    try {
+      await tvtimeWriteService.addShowFromDetails(tmdbDetails, status)
+      setShowPicker(false)
+      await refreshDetail()
+    } catch (err) {
+      console.error(err)
+      showToast('Não foi possível adicionar a série.')
+    }
+  }
+
+  if (notFound) {
+    return (
+      <div className="min-h-screen bg-tvtime-900 flex flex-col items-center justify-center px-6 text-center">
+        <p className="text-tvtime-100 font-semibold mb-2">Série não encontrada</p>
+        <button
+          onClick={() => navigate('/')}
+          className="bg-tvtime-100 text-tvtime-900 rounded-full px-4 py-2 text-sm font-semibold"
+        >
+          Voltar
+        </button>
+      </div>
+    )
   }
 
   if (loading) {
-    return <div className="min-h-screen bg-tvtime-900" />
+    return <ShowDetailSkeleton />
   }
 
   if (error || !tmdbDetails) {
@@ -159,6 +211,7 @@ export function ShowDetailPage() {
       {showPicker && (
         <StatusPickerSheet onCancel={() => setShowPicker(false)} onSelect={handleAdd} />
       )}
+      {toast && <Toast message={toast.message} variant={toast.variant} />}
     </div>
   )
 }
