@@ -108,10 +108,11 @@ export const tvtimeWriteService = {
     })
   },
 
-  async watchEpisode(episodeId: string): Promise<void> {
+  async watchEpisode(episodeId: string, includePrevious = false): Promise<void> {
     const { error } = await supabase.rpc('tvtime_watch_episode', {
       p_episode_id: episodeId,
       p_watched: true,
+      p_include_previous: includePrevious,
     })
     if (error) throw error
   },

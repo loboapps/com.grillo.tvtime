@@ -7,7 +7,9 @@ import { SeasonAccordion } from '@/components/SeasonAccordion'
 import { StatusPickerSheet } from '@/components/StatusPickerSheet'
 import { Toast } from '@/components/Toast'
 import { Skeleton } from '@/components/Skeleton'
+import { MarkWatchedModal } from '@/components/MarkWatchedModal'
 import { useToast } from '@/utils/useToast'
+import { hasEarlierUnwatchedEpisode } from '@/utils/hasEarlierUnwatchedEpisode'
 import type { ShowDetail, ShowStatus, TmdbShowDetails } from '@/types/tvtime'
 
 function ShowDetailSkeleton() {
@@ -39,6 +41,7 @@ export function ShowDetailPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [showPicker, setShowPicker] = useState(false)
+  const [pendingMark, setPendingMark] = useState<string | null>(null)
   const { toast, showToast } = useToast()
 
   const notFound = Number.isNaN(id)
@@ -86,17 +89,58 @@ export function ShowDetailPage() {
     load()
   }, [load])
 
-  async function handleToggleEpisode(episodeId: string, currentlyWatched: boolean) {
-    try {
-      if (currentlyWatched) {
+  async function handleToggleEpisode(
+    episodeId: string,
+    currentlyWatched: boolean,
+    seasonNumber: number,
+    episodeNumber: number,
+  ) {
+    if (currentlyWatched) {
+      try {
         await tvtimeWriteService.unwatchEpisode(episodeId)
-      } else {
-        await tvtimeWriteService.watchEpisode(episodeId)
+        await refreshDetail()
+      } catch (err) {
+        console.error(err)
+        showToast('Não foi possível atualizar o episódio.')
       }
+      return
+    }
+
+    if (detail && hasEarlierUnwatchedEpisode(detail.seasons, seasonNumber, episodeNumber)) {
+      setPendingMark(episodeId)
+      return
+    }
+
+    try {
+      await tvtimeWriteService.watchEpisode(episodeId)
       await refreshDetail()
     } catch (err) {
       console.error(err)
       showToast('Não foi possível atualizar o episódio.')
+    }
+  }
+
+  async function handleMarkJustThis() {
+    if (!pendingMark) return
+    try {
+      await tvtimeWriteService.watchEpisode(pendingMark)
+      setPendingMark(null)
+      await refreshDetail()
+    } catch (err) {
+      console.error(err)
+      showToast('Não foi possível atualizar o episódio.')
+    }
+  }
+
+  async function handleMarkAllPrevious() {
+    if (!pendingMark) return
+    try {
+      await tvtimeWriteService.watchEpisode(pendingMark, true)
+      setPendingMark(null)
+      await refreshDetail()
+    } catch (err) {
+      console.error(err)
+      showToast('Não foi possível atualizar os episódios.')
     }
   }
 
@@ -210,6 +254,13 @@ export function ShowDetailPage() {
 
       {showPicker && (
         <StatusPickerSheet onCancel={() => setShowPicker(false)} onSelect={handleAdd} />
+      )}
+      {pendingMark && (
+        <MarkWatchedModal
+          onCancel={() => setPendingMark(null)}
+          onMarkJustThis={handleMarkJustThis}
+          onMarkAllPrevious={handleMarkAllPrevious}
+        />
       )}
       {toast && <Toast message={toast.message} variant={toast.variant} />}
     </div>

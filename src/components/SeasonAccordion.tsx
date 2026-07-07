@@ -44,7 +44,7 @@ export function SeasonAccordion({ season, stillPathLookup, trackable, onToggleEp
                 </div>
                 <button
                   disabled={!trackable}
-                  onClick={() => onToggleEpisode(episode.episode_id, episode.watched)}
+                  onClick={() => onToggleEpisode(episode.episode_id, episode.watched, season.season_number, episode.episode_number)}
                   className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
                     episode.watched ? 'bg-yellow-500' : 'bg-tvtime-700'
                   } disabled:opacity-40`}

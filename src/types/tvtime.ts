@@ -132,7 +132,13 @@ export interface SeasonAccordionProps {
   season: ShowSeasonDetail
   stillPathLookup: Record<string, string | null>
   trackable: boolean
-  onToggleEpisode: (episodeId: string, currentlyWatched: boolean) => void
+  onToggleEpisode: (episodeId: string, currentlyWatched: boolean, seasonNumber: number, episodeNumber: number) => void
+}
+
+export interface MarkWatchedModalProps {
+  onMarkJustThis: () => void
+  onMarkAllPrevious: () => void
+  onCancel: () => void
 }
 
 export interface ToastProps {
