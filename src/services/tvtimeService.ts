@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabaseClient'
 import type {
   AddShowInput,
+  ShowDetail,
   ShowStatus,
   TmdbSearchResult,
   TmdbShowDetails,
@@ -20,6 +21,12 @@ export const tvtimeService = {
     const { data, error } = await supabase.rpc('tvtime_load_watchlist')
     if (error) throw error
     return data as Watchlist
+  },
+
+  async loadShow(tmdbId: number): Promise<ShowDetail | null> {
+    const { data, error } = await supabase.rpc('tvtime_load_show', { p_tmdb_id: tmdbId })
+    if (error) throw error
+    return data as ShowDetail | null
   },
 
   async loadStaleShowIds(): Promise<number[]> {
@@ -77,6 +84,22 @@ export const tvtimeWriteService = {
       p_episodes: input.episodes,
     })
     if (error) throw error
+  },
+
+  async addShowFromDetails(details: TmdbShowDetails, status: ShowStatus): Promise<void> {
+    const episodes = await tvtimeService.fetchAllEpisodes(details.id, details.seasons)
+    await tvtimeWriteService.addShow({
+      tmdbId: details.id,
+      name: details.name,
+      posterPath: details.poster_path,
+      backdropPath: details.backdrop_path,
+      tmdbStatus: details.status,
+      numberOfSeasons: details.number_of_seasons,
+      numberOfEpisodes: details.number_of_episodes,
+      userStatus: status,
+      seasons: details.seasons,
+      episodes,
+    })
   },
 
   async watchEpisode(episodeId: string): Promise<void> {

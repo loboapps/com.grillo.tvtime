@@ -8,6 +8,7 @@ export type ShowStatus = 'watching' | 'finished' | 'want_to_see' | 'dropped'
 export interface WatchlistEntry {
   episode_id: string
   show_id: string
+  tmdb_id: number
   name: string
   poster_path: string | null
   season_number: number
@@ -48,12 +49,14 @@ export interface TmdbShowDetails {
   number_of_seasons: number
   number_of_episodes: number
   seasons: TmdbSeason[]
+  networks: { name: string }[]
 }
 
 export interface TmdbEpisode {
   episode_number: number
   name: string
   air_date: string | null
+  still_path: string | null
 }
 
 export interface AddShowInput {
@@ -94,4 +97,40 @@ export interface ShowRowProps {
 export interface StatusPickerSheetProps {
   onSelect: (status: ShowStatus) => void
   onCancel: () => void
+}
+
+export interface ShowEpisodeDetail {
+  episode_id: string
+  episode_number: number
+  name: string | null
+  air_date: string | null
+  watched: boolean
+}
+
+export interface ShowSeasonDetail {
+  season_id: string
+  season_number: number
+  name: string | null
+  user_status: ShowStatus | null
+  episode_count: number
+  watched_count: number
+  episodes: ShowEpisodeDetail[]
+}
+
+export interface ShowDetail {
+  show_id: string
+  tmdb_id: number
+  name: string
+  poster_path: string | null
+  backdrop_path: string | null
+  user_status: ShowStatus
+  tmdb_status: string
+  seasons: ShowSeasonDetail[]
+}
+
+export interface SeasonAccordionProps {
+  season: ShowSeasonDetail
+  stillPathLookup: Record<string, string | null>
+  trackable: boolean
+  onToggleEpisode: (episodeId: string, currentlyWatched: boolean) => void
 }
