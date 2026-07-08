@@ -41,11 +41,11 @@ rows as (
   select
     sh.id as show_id,
     sh.name,
-    sh.user_status,
     ne.is_aired,
     ne.air_date,
     lw.last_watched_at,
-    (ne.air_date is not null and ne.air_date >= current_date - interval '30 days') as is_new,
+    (lw.last_watched_at is not null) as has_watched_before,
+    (ne.air_date is not null and ne.air_date >= current_date - interval '15 days') as is_new,
     jsonb_build_object(
       'episode_id', ne.episode_id, 'show_id', sh.id, 'tmdb_id', sh.tmdb_id,
       'name', sh.name, 'poster_path', sh.poster_path,
@@ -53,7 +53,7 @@ rows as (
       'episode_name', ne.name,
       'remaining', coalesce(pc.pending, 0) - (case when ne.is_aired then 1 else 0 end),
       'is_first_ep', (ne.episode_number = 1),
-      'is_new', (ne.air_date is not null and ne.air_date >= current_date - interval '30 days'),
+      'is_new', (ne.air_date is not null and ne.air_date >= current_date - interval '15 days'),
       'is_last_ep', (ne.episode_number = ne.episode_count)
     ) as entry_json
   from tvtime_shows sh
@@ -62,31 +62,37 @@ rows as (
   left join last_watched lw on lw.show_id = sh.id
   where sh.user_status != 'dropped'
 )
+-- Categorization is fully derived from watch behavior (15-day window), never from a stored
+-- status: watching = watched recently OR a followed show's new episode arrived recently;
+-- want_to_see = never watched; not_seen_in_a_while = watched before, nothing recently, no new
+-- episode pending. These three conditions are mutually exclusive by construction (see below),
+-- so a show can never appear in more than one bucket. Shows with everything watched have no
+-- next_ep row and therefore appear in none of the three ("finished" is implicit, not listed).
 select jsonb_build_object(
   'watch_next', coalesce((
     select jsonb_agg(
       r.entry_json
       order by greatest(
         coalesce(r.last_watched_at, '-infinity'::timestamptz),
-        case when r.is_new and r.user_status = 'watching' and r.is_aired
+        case when r.has_watched_before and r.is_aired and r.is_new
              then r.air_date::timestamptz else '-infinity'::timestamptz end
       ) desc
     )
     from rows r
-    where (r.last_watched_at >= now() - interval '30 days')
-       or (r.user_status = 'watching' and r.is_aired and r.is_new)
+    where (r.last_watched_at >= now() - interval '15 days')
+       or (r.has_watched_before and r.is_aired and r.is_new)
   ), '[]'::jsonb),
   'not_seen_in_a_while', coalesce((
     select jsonb_agg(r.entry_json order by r.name asc)
     from rows r
-    where r.user_status = 'watching'
-      and (r.last_watched_at is null or r.last_watched_at < now() - interval '30 days')
+    where r.has_watched_before
+      and (r.last_watched_at is null or r.last_watched_at < now() - interval '15 days')
       and not (r.is_aired and r.is_new)
   ), '[]'::jsonb),
   'want_to_see', coalesce((
     select jsonb_agg(r.entry_json order by r.name asc)
     from rows r
-    where r.user_status = 'want_to_see'
+    where not r.has_watched_before
   ), '[]'::jsonb)
 );
 $$;

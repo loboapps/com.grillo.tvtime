@@ -7,7 +7,7 @@ set search_path = 'public'
 as $$
   select coalesce(jsonb_agg(tmdb_id), '[]'::jsonb)
   from tvtime_shows
-  where user_status = 'watching'
+  where user_status != 'dropped'
     and synced_at < now() - interval '12 hours';
 $$;
 
