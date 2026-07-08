@@ -190,6 +190,9 @@ export function ShowDetailPage() {
     ? `https://image.tmdb.org/t/p/w780${tmdbDetails.backdrop_path}`
     : null
   const network = tmdbDetails.networks[0]?.name
+  const totalEpisodes = detail?.seasons.reduce((sum, s) => sum + s.episode_count, 0) ?? 0
+  const totalWatched = detail?.seasons.reduce((sum, s) => sum + s.watched_count, 0) ?? 0
+  const overallProgressPct = totalEpisodes > 0 ? (totalWatched / totalEpisodes) * 100 : 0
 
   return (
     <div className="min-h-screen bg-tvtime-900 pb-20">
@@ -208,6 +211,12 @@ export function ShowDetailPage() {
         <p className="text-tvtime-300 text-sm mt-1">
           {tmdbDetails.number_of_seasons} seasons{network ? ` · ${network}` : ''}
         </p>
+
+        {detail && (
+          <div className="h-1.5 bg-tvtime-700 rounded-full mt-3 overflow-hidden">
+            <div className="h-full bg-green-500" style={{ width: `${overallProgressPct}%` }} />
+          </div>
+        )}
 
         {!detail && (
           <button

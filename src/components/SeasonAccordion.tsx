@@ -6,6 +6,7 @@ export function SeasonAccordion({ season, stillPathLookup, posterPath, trackable
   const [open, setOpen] = useState(false)
   const [failedStills, setFailedStills] = useState<Set<string>>(new Set())
   const fullyWatched = season.watched_count === season.episode_count && season.episode_count > 0
+  const progressPct = season.episode_count > 0 ? (season.watched_count / season.episode_count) * 100 : 0
 
   return (
     <div className="border-b border-tvtime-700">
@@ -27,6 +28,10 @@ export function SeasonAccordion({ season, stillPathLookup, posterPath, trackable
           />
         </span>
       </button>
+
+      <div className="h-1 bg-tvtime-700">
+        <div className="h-full bg-green-500" style={{ width: `${progressPct}%` }} />
+      </div>
 
       {open && (
         <div>
