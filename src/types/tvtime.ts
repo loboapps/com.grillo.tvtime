@@ -91,7 +91,14 @@ export interface PrivateRouteProps {
 
 export interface ShowRowProps {
   entry: WatchlistEntry
+  // Performs the write only — ShowRow awaits this to know when to switch from
+  // the pending spinner to the confirmed "Watched" banner.
   onWatch: (entry: WatchlistEntry) => Promise<void>
+  // Fired once onWatch resolves. Fire-and-forget from ShowRow's side — it tells
+  // the parent to refresh and eventually swap this row for the show's next
+  // episode, but ShowRow doesn't need to wait for that; it just stays showing
+  // the confirmation banner until the parent replaces it.
+  onWatched: (entry: WatchlistEntry) => void
 }
 
 export interface ShowEpisodeDetail {

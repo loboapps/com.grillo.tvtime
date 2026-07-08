@@ -132,13 +132,25 @@ export function WatchListPage() {
     return () => observer.disconnect()
   }, [watchlist])
 
+  // ShowRow awaits just the write, so it can show a spinner for exactly the
+  // time the server call is actually in flight, then switch to its own
+  // "Watched" confirmation banner as soon as this resolves.
   async function handleWatch(entry: WatchlistEntry) {
     try {
       await tvtimeWriteService.watchEpisode(entry.episode_id)
-      // Wait for the show's fresh state and the row's own "Watched" confirmation
-      // banner together (whichever takes longer), then swap in just this one
-      // show's next episode — not a full watchlist reload across every tracked
-      // show, which doesn't scale once there are dozens of shows being tracked.
+    } catch (err) {
+      console.error(err)
+      showToast("Couldn't mark as watched.")
+      throw err
+    }
+  }
+
+  // Fired after the write above succeeds. Not awaited by ShowRow — it holds
+  // its own confirmation banner until this replaces the row with the show's
+  // next episode. Scoped to one show, not a full watchlist reload across
+  // every tracked show, which doesn't scale once there are dozens of shows.
+  async function handleWatched(entry: WatchlistEntry) {
+    try {
       const [scoped] = await Promise.all([
         tvtimeService.loadWatchlist(entry.show_id),
         new Promise((resolve) => setTimeout(resolve, MARK_CONFIRM_MS)),
@@ -146,8 +158,7 @@ export function WatchListPage() {
       setWatchlist((prev) => (prev ? replaceShowInWatchlist(prev, entry.show_id, scoped) : prev))
     } catch (err) {
       console.error(err)
-      showToast("Couldn't mark as watched.")
-      throw err
+      showToast("Couldn't refresh the list.")
     }
   }
 
@@ -192,7 +203,7 @@ export function WatchListPage() {
   return (
     <div className="min-h-screen bg-tvtime-900 pb-20">
       <div className="sticky top-0 z-10 bg-tvtime-900 py-3 flex justify-center">
-        <span className="bg-tvtime-700 text-tvtime-100 text-sm font-semibold px-4 py-2 rounded-full">
+        <span className="bg-tvtime-600 text-tvtime-100 text-sm font-bold uppercase tracking-wide px-5 py-2.5 rounded-full">
           {SECTION_LABELS[currentSection]}
         </span>
       </div>
@@ -205,7 +216,7 @@ export function WatchListPage() {
           }}
         >
           {watchlist[key].map((entry) => (
-            <ShowRow key={entry.episode_id} entry={entry} onWatch={handleWatch} />
+            <ShowRow key={entry.episode_id} entry={entry} onWatch={handleWatch} onWatched={handleWatched} />
           ))}
         </section>
       ))}
