@@ -133,8 +133,14 @@ export function WatchListPage() {
   async function handleWatch(entry: WatchlistEntry) {
     // A swipe-triggered mark re-renders the list with a new row in the same screen
     // position, which can register a second swipe as part of the same physical
-    // gesture. This cooldown blocks that immediate re-trigger.
-    if (Date.now() - lastMarkedAtRef.current < MARK_COOLDOWN_MS) return
+    // gesture. This cooldown blocks that immediate re-trigger — it's intentionally
+    // global (not per-row), so a toast is required here: the row's own swipe
+    // animation always completes visually, so a silent no-op would look like a
+    // successful mark that never happened.
+    if (Date.now() - lastMarkedAtRef.current < MARK_COOLDOWN_MS) {
+      showToast('Wait a moment before marking another episode.')
+      return
+    }
     lastMarkedAtRef.current = Date.now()
     try {
       await tvtimeWriteService.watchEpisode(entry.episode_id)
