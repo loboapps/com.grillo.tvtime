@@ -8,6 +8,7 @@ import type {
   TmdbSeason,
   TmdbEpisode,
   Watchlist,
+  WatchlistEntryUpdate,
 } from '@/types/tvtime'
 
 async function invokeTmdb<T>(body: Record<string, unknown>): Promise<T> {
@@ -21,6 +22,12 @@ export const tvtimeService = {
     const { data, error } = await supabase.rpc('tvtime_load_watchlist')
     if (error) throw error
     return data as Watchlist
+  },
+
+  async loadWatchlistEntry(showId: string): Promise<WatchlistEntryUpdate | null> {
+    const { data, error } = await supabase.rpc('tvtime_load_watchlist_entry', { p_show_id: showId })
+    if (error) throw error
+    return data as WatchlistEntryUpdate | null
   },
 
   async loadShow(tmdbId: number): Promise<ShowDetail | null> {

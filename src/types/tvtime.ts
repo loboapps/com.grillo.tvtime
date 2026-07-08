@@ -26,6 +26,11 @@ export interface Watchlist {
   want_to_see: WatchlistEntry[]
 }
 
+export interface WatchlistEntryUpdate {
+  bucket: keyof Watchlist
+  entry: WatchlistEntry
+}
+
 export interface TmdbSearchResult {
   id: number
   name: string
@@ -91,7 +96,7 @@ export interface PrivateRouteProps {
 
 export interface ShowRowProps {
   entry: WatchlistEntry
-  onWatch: (entry: WatchlistEntry) => void
+  onWatch: (entry: WatchlistEntry) => Promise<void>
 }
 
 export interface ShowEpisodeDetail {

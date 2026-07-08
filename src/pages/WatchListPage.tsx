@@ -5,12 +5,30 @@ import { Toast } from '@/components/Toast'
 import { Skeleton } from '@/components/Skeleton'
 import { useToast } from '@/utils/useToast'
 import { tvtimeService, tvtimeWriteService } from '@/services/tvtimeService'
-import type { Watchlist, WatchlistEntry } from '@/types/tvtime'
+import type { Watchlist, WatchlistEntry, WatchlistEntryUpdate } from '@/types/tvtime'
+
+// How long the row's "Watched" confirmation banner stays up before the row
+// swaps to the show's next episode (or disappears, if that was the last one).
+const MARK_CONFIRM_MS = 1000
 
 const SECTION_LABELS: Record<keyof Watchlist, string> = {
   watch_next: 'WATCH NEXT',
   not_seen_in_a_while: 'NOT SEEN IN A WHILE',
   want_to_see: 'WANT TO SEE',
+}
+
+function replaceShowInWatchlist(
+  watchlist: Watchlist,
+  showId: string,
+  update: WatchlistEntryUpdate | null,
+): Watchlist {
+  const stripped: Watchlist = {
+    watch_next: watchlist.watch_next.filter((e) => e.show_id !== showId),
+    not_seen_in_a_while: watchlist.not_seen_in_a_while.filter((e) => e.show_id !== showId),
+    want_to_see: watchlist.want_to_see.filter((e) => e.show_id !== showId),
+  }
+  if (!update) return stripped
+  return { ...stripped, [update.bucket]: [...stripped[update.bucket], update.entry] }
 }
 
 async function syncStaleShows(): Promise<void> {
@@ -76,19 +94,6 @@ export function WatchListPage() {
     }
   }, [])
 
-  // Re-fetches only the watchlist itself, without re-running the TMDB stale-sync —
-  // used after marking an episode watched, so one swipe doesn't re-trigger a sync
-  // pass across every stale show.
-  const refreshWatchlist = useCallback(async () => {
-    try {
-      const data = await tvtimeService.loadWatchlist()
-      setWatchlist(data)
-    } catch (err) {
-      console.error(err)
-      showToast("Couldn't refresh the list.")
-    }
-  }, [showToast])
-
   useEffect(() => {
     load()
   }, [load])
@@ -130,10 +135,19 @@ export function WatchListPage() {
   async function handleWatch(entry: WatchlistEntry) {
     try {
       await tvtimeWriteService.watchEpisode(entry.episode_id)
-      await refreshWatchlist()
+      // Wait for the show's fresh state and the row's own "Watched" confirmation
+      // banner together (whichever takes longer), then swap in just this one
+      // show's next episode — not a full watchlist reload across every tracked
+      // show, which doesn't scale once there are dozens of shows being tracked.
+      const [update] = await Promise.all([
+        tvtimeService.loadWatchlistEntry(entry.show_id),
+        new Promise((resolve) => setTimeout(resolve, MARK_CONFIRM_MS)),
+      ])
+      setWatchlist((prev) => (prev ? replaceShowInWatchlist(prev, entry.show_id, update) : prev))
     } catch (err) {
       console.error(err)
       showToast("Couldn't mark as watched.")
+      throw err
     }
   }
 

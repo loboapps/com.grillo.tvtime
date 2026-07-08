@@ -6,10 +6,25 @@ import type { ShowRowProps } from '@/types/tvtime'
 export function ShowRow({ entry, onWatch }: ShowRowProps) {
   const [marking, setMarking] = useState(false)
 
-  function handleMark() {
+  async function handleMark() {
     if (marking) return
     setMarking(true)
-    onWatch(entry)
+    try {
+      await onWatch(entry)
+    } catch {
+      // onWatch already surfaced a toast — just let the row go back to normal
+      // so the episode isn't stuck showing a confirmation that never happened.
+      setMarking(false)
+    }
+  }
+
+  if (marking) {
+    return (
+      <div className="flex items-center gap-2 px-4 py-3 min-h-24 bg-green-600 text-white font-semibold border-b border-tvtime-700">
+        <icons.check size={18} />
+        Watched
+      </div>
+    )
   }
 
   return (
@@ -44,11 +59,9 @@ export function ShowRow({ entry, onWatch }: ShowRowProps) {
         onClick={handleMark}
         disabled={marking}
         aria-label="Mark as watched"
-        className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 border-2 transition-colors ${
-          marking ? 'bg-green-600 border-green-600' : 'border-tvtime-600'
-        }`}
+        className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 border-2 border-tvtime-600"
       >
-        <icons.check size={18} className={marking ? 'text-white' : 'text-tvtime-600'} />
+        <icons.check size={18} className="text-tvtime-600" />
       </button>
     </div>
   )
