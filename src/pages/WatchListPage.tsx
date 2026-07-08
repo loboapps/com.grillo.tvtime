@@ -7,8 +7,6 @@ import { useToast } from '@/utils/useToast'
 import { tvtimeService, tvtimeWriteService } from '@/services/tvtimeService'
 import type { Watchlist, WatchlistEntry } from '@/types/tvtime'
 
-const MARK_COOLDOWN_MS = 2000
-
 const SECTION_LABELS: Record<keyof Watchlist, string> = {
   watch_next: 'WATCH NEXT',
   not_seen_in_a_while: 'NOT SEEN IN A WHILE',
@@ -65,7 +63,6 @@ export function WatchListPage() {
     want_to_see: null,
   })
   const { toast, showToast } = useToast()
-  const lastMarkedAtRef = useRef(0)
 
   const load = useCallback(async () => {
     try {
@@ -131,17 +128,6 @@ export function WatchListPage() {
   }, [watchlist])
 
   async function handleWatch(entry: WatchlistEntry) {
-    // A swipe-triggered mark re-renders the list with a new row in the same screen
-    // position, which can register a second swipe as part of the same physical
-    // gesture. This cooldown blocks that immediate re-trigger — it's intentionally
-    // global (not per-row), so a toast is required here: the row's own swipe
-    // animation always completes visually, so a silent no-op would look like a
-    // successful mark that never happened.
-    if (Date.now() - lastMarkedAtRef.current < MARK_COOLDOWN_MS) {
-      showToast('Wait a moment before marking another episode.')
-      return
-    }
-    lastMarkedAtRef.current = Date.now()
     try {
       await tvtimeWriteService.watchEpisode(entry.episode_id)
       await refreshWatchlist()
