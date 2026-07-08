@@ -204,7 +204,6 @@ export function WatchListPage() {
             sectionRefs.current[key] = el
           }}
         >
-          <h2 className="text-tvtime-300 text-xs font-bold px-4 py-2">{SECTION_LABELS[key]}</h2>
           {watchlist[key].map((entry) => (
             <ShowRow key={entry.episode_id} entry={entry} onWatch={handleWatch} />
           ))}

@@ -45,7 +45,7 @@ export function ShowRow({ entry, onWatch }: ShowRowProps) {
         <p className="text-tvtime-100 text-sm truncate">{entry.episode_name}</p>
         <div className="flex gap-1 mt-1">
           {entry.is_first_ep && (
-            <span className="text-[10px] bg-tvtime-600 text-tvtime-100 px-2 py-0.5 rounded-full">1st EP</span>
+            <span className="text-[10px] bg-tvtime-600 text-tvtime-100 px-2 py-0.5 rounded-full">Premiere</span>
           )}
           {entry.is_new && (
             <span className="text-[10px] bg-yellow-500 text-tvtime-900 px-2 py-0.5 rounded-full">NEW</span>
