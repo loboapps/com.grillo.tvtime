@@ -2,8 +2,9 @@ import { useState } from 'react'
 import { icons } from '@/utils/icons'
 import type { SeasonAccordionProps } from '@/types/tvtime'
 
-export function SeasonAccordion({ season, stillPathLookup, trackable, onToggleEpisode }: SeasonAccordionProps) {
+export function SeasonAccordion({ season, stillPathLookup, posterPath, trackable, onToggleEpisode }: SeasonAccordionProps) {
   const [open, setOpen] = useState(false)
+  const [failedStills, setFailedStills] = useState<Set<string>>(new Set())
   const fullyWatched = season.watched_count === season.episode_count && season.episode_count > 0
 
   return (
@@ -31,15 +32,29 @@ export function SeasonAccordion({ season, stillPathLookup, trackable, onToggleEp
         <div>
           {season.episodes.map((episode) => {
             const stillPath = stillPathLookup[`${season.season_number}-${episode.episode_number}`]
+            const showStill = stillPath && !failedStills.has(episode.episode_id)
             return (
               <div key={episode.episode_id} className="flex items-center gap-3 px-4 py-3">
-                {stillPath && (
-                  <img
-                    src={`https://image.tmdb.org/t/p/w300${stillPath}`}
-                    alt={episode.name ?? ''}
-                    className="w-24 h-14 object-cover rounded"
-                  />
-                )}
+                <div className="w-24 h-14 shrink-0 rounded overflow-hidden bg-tvtime-800">
+                  {showStill ? (
+                    <img
+                      src={`https://image.tmdb.org/t/p/w300${stillPath}`}
+                      alt={episode.name ?? ''}
+                      className="w-full h-full object-cover"
+                      onError={() =>
+                        setFailedStills((prev) => new Set(prev).add(episode.episode_id))
+                      }
+                    />
+                  ) : (
+                    posterPath && (
+                      <img
+                        src={`https://image.tmdb.org/t/p/w185${posterPath}`}
+                        alt=""
+                        className="w-full h-full object-cover opacity-50"
+                      />
+                    )
+                  )}
+                </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-tvtime-300 text-xs">
                     S{season.season_number} | E{episode.episode_number}

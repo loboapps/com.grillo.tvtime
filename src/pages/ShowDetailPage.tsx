@@ -227,6 +227,7 @@ export function ShowDetailPage() {
               key={season.season_id}
               season={season}
               stillPathLookup={stillPathLookup}
+              posterPath={detail.poster_path}
               trackable
               onToggleEpisode={handleToggleEpisode}
             />
@@ -244,6 +245,7 @@ export function ShowDetailPage() {
                 episodes: [],
               }}
               stillPathLookup={stillPathLookup}
+              posterPath={tmdbDetails.poster_path}
               trackable={false}
               onToggleEpisode={() => {}}
             />
