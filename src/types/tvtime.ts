@@ -26,11 +26,6 @@ export interface Watchlist {
   want_to_see: WatchlistEntry[]
 }
 
-export interface WatchlistEntryUpdate {
-  bucket: keyof Watchlist
-  entry: WatchlistEntry
-}
-
 export interface TmdbSearchResult {
   id: number
   name: string

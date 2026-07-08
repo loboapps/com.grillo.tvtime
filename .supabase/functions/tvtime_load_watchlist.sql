@@ -1,4 +1,6 @@
-create or replace function tvtime_load_watchlist()
+drop function if exists tvtime_load_watchlist();
+
+create or replace function tvtime_load_watchlist(p_show_id uuid default null)
 returns jsonb
 language sql
 security invoker
@@ -19,6 +21,7 @@ with next_ep as (
   from tvtime_episodes e
   join tvtime_seasons s on s.id = e.season_id
   where e.watched = false
+    and (p_show_id is null or e.show_id = p_show_id)
   order by
     e.show_id,
     (e.air_date is null or e.air_date > current_date) asc,
@@ -29,12 +32,14 @@ pending_counts as (
   select show_id, count(*) as pending
   from tvtime_episodes
   where watched = false and air_date is not null and air_date <= current_date
+    and (p_show_id is null or show_id = p_show_id)
   group by show_id
 ),
 last_watched as (
   select show_id, max(watched_at) as last_watched_at
   from tvtime_episodes
   where watched = true
+    and (p_show_id is null or show_id = p_show_id)
   group by show_id
 ),
 rows as (
@@ -61,6 +66,7 @@ rows as (
   left join pending_counts pc on pc.show_id = sh.id
   left join last_watched lw on lw.show_id = sh.id
   where sh.user_status != 'dropped'
+    and (p_show_id is null or sh.id = p_show_id)
 )
 -- Categorization is fully derived from watch behavior (15-day window), never from a stored
 -- status: watching = watched recently OR a followed show's new episode arrived recently;
@@ -68,6 +74,8 @@ rows as (
 -- episode pending. These three conditions are mutually exclusive by construction (see below),
 -- so a show can never appear in more than one bucket. Shows with everything watched have no
 -- next_ep row and therefore appear in none of the three ("finished" is implicit, not listed).
+-- p_show_id scopes every CTE to one show (used to refresh a single row after a write without
+-- recomputing the whole list); left null, it behaves exactly as before.
 select jsonb_build_object(
   'watch_next', coalesce((
     select jsonb_agg(
@@ -97,5 +105,5 @@ select jsonb_build_object(
 );
 $$;
 
-grant execute on function tvtime_load_watchlist() to authenticated;
-revoke execute on function tvtime_load_watchlist() from public, anon;
+grant execute on function tvtime_load_watchlist(uuid) to authenticated;
+revoke execute on function tvtime_load_watchlist(uuid) from public, anon;
