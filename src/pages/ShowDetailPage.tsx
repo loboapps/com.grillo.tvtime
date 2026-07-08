@@ -4,13 +4,12 @@ import { icons } from '@/utils/icons'
 import { tvtimeService, tvtimeWriteService } from '@/services/tvtimeService'
 import { buildStillPathLookup } from '@/utils/buildStillPathLookup'
 import { SeasonAccordion } from '@/components/SeasonAccordion'
-import { StatusPickerSheet } from '@/components/StatusPickerSheet'
 import { Toast } from '@/components/Toast'
 import { Skeleton } from '@/components/Skeleton'
 import { MarkWatchedModal } from '@/components/MarkWatchedModal'
 import { useToast } from '@/utils/useToast'
 import { hasEarlierUnwatchedEpisode } from '@/utils/hasEarlierUnwatchedEpisode'
-import type { ShowDetail, ShowStatus, TmdbShowDetails } from '@/types/tvtime'
+import type { ShowDetail, TmdbShowDetails } from '@/types/tvtime'
 
 function ShowDetailSkeleton() {
   return (
@@ -28,7 +27,7 @@ function ShowDetailSkeleton() {
   )
 }
 
-const LOAD_ERROR_MESSAGE = 'Não foi possível carregar esta série.'
+const LOAD_ERROR_MESSAGE = "Couldn't load this show."
 
 export function ShowDetailPage() {
   const { tmdbId } = useParams<{ tmdbId: string }>()
@@ -40,7 +39,6 @@ export function ShowDetailPage() {
   const [stillPathLookup, setStillPathLookup] = useState<Record<string, string | null>>({})
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [showPicker, setShowPicker] = useState(false)
   const [pendingMark, setPendingMark] = useState<string | null>(null)
   const { toast, showToast } = useToast()
 
@@ -101,7 +99,7 @@ export function ShowDetailPage() {
         await refreshDetail()
       } catch (err) {
         console.error(err)
-        showToast('Não foi possível atualizar o episódio.')
+        showToast("Couldn't update the episode.")
       }
       return
     }
@@ -116,7 +114,7 @@ export function ShowDetailPage() {
       await refreshDetail()
     } catch (err) {
       console.error(err)
-      showToast('Não foi possível atualizar o episódio.')
+      showToast("Couldn't update the episode.")
     }
   }
 
@@ -128,7 +126,7 @@ export function ShowDetailPage() {
       await refreshDetail()
     } catch (err) {
       console.error(err)
-      showToast('Não foi possível atualizar o episódio.')
+      showToast("Couldn't update the episode.")
     }
   }
 
@@ -140,31 +138,30 @@ export function ShowDetailPage() {
       await refreshDetail()
     } catch (err) {
       console.error(err)
-      showToast('Não foi possível atualizar os episódios.')
+      showToast("Couldn't update the episodes.")
     }
   }
 
-  async function handleAdd(status: ShowStatus) {
+  async function handleAdd() {
     if (!tmdbDetails) return
     try {
-      await tvtimeWriteService.addShowFromDetails(tmdbDetails, status)
-      setShowPicker(false)
+      await tvtimeWriteService.addShowFromDetails(tmdbDetails)
       await refreshDetail()
     } catch (err) {
       console.error(err)
-      showToast('Não foi possível adicionar a série.')
+      showToast("Couldn't add this show.")
     }
   }
 
   if (notFound) {
     return (
       <div className="min-h-screen bg-tvtime-900 flex flex-col items-center justify-center px-6 text-center">
-        <p className="text-tvtime-100 font-semibold mb-2">Série não encontrada</p>
+        <p className="text-tvtime-100 font-semibold mb-2">Show not found</p>
         <button
           onClick={() => navigate('/')}
           className="bg-tvtime-100 text-tvtime-900 rounded-full px-4 py-2 text-sm font-semibold"
         >
-          Voltar
+          Back
         </button>
       </div>
     )
@@ -177,13 +174,13 @@ export function ShowDetailPage() {
   if (error || !tmdbDetails) {
     return (
       <div className="min-h-screen bg-tvtime-900 flex flex-col items-center justify-center px-6 text-center">
-        <p className="text-tvtime-100 font-semibold mb-2">Algo deu errado</p>
+        <p className="text-tvtime-100 font-semibold mb-2">Something went wrong</p>
         <p className="text-tvtime-300 text-sm mb-6">{error}</p>
         <button
           onClick={() => load()}
           className="bg-tvtime-100 text-tvtime-900 rounded-full px-4 py-2 text-sm font-semibold"
         >
-          Tentar novamente
+          Try again
         </button>
       </div>
     )
@@ -209,15 +206,15 @@ export function ShowDetailPage() {
       <div className="px-4 py-4">
         <h1 className="text-tvtime-100 text-xl font-bold">{tmdbDetails.name}</h1>
         <p className="text-tvtime-300 text-sm mt-1">
-          {tmdbDetails.number_of_seasons} temporadas{network ? ` · ${network}` : ''}
+          {tmdbDetails.number_of_seasons} seasons{network ? ` · ${network}` : ''}
         </p>
 
         {!detail && (
           <button
-            onClick={() => setShowPicker(true)}
+            onClick={() => handleAdd()}
             className="mt-4 bg-tvtime-100 text-tvtime-900 rounded-full px-4 py-2 text-sm font-semibold"
           >
-            Adicionar
+            Add
           </button>
         )}
       </div>
@@ -252,9 +249,6 @@ export function ShowDetailPage() {
             />
           ))}
 
-      {showPicker && (
-        <StatusPickerSheet onCancel={() => setShowPicker(false)} onSelect={handleAdd} />
-      )}
       {pendingMark && (
         <MarkWatchedModal
           onCancel={() => setPendingMark(null)}

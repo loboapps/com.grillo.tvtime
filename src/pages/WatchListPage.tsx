@@ -7,6 +7,8 @@ import { useToast } from '@/utils/useToast'
 import { tvtimeService, tvtimeWriteService } from '@/services/tvtimeService'
 import type { Watchlist, WatchlistEntry } from '@/types/tvtime'
 
+const MARK_COOLDOWN_MS = 2000
+
 const SECTION_LABELS: Record<keyof Watchlist, string> = {
   watch_next: 'WATCH NEXT',
   not_seen_in_a_while: 'NOT SEEN IN A WHILE',
@@ -63,6 +65,7 @@ export function WatchListPage() {
     want_to_see: null,
   })
   const { toast, showToast } = useToast()
+  const lastMarkedAtRef = useRef(0)
 
   const load = useCallback(async () => {
     try {
@@ -72,7 +75,7 @@ export function WatchListPage() {
       setError(null)
     } catch (err) {
       console.error(err)
-      setError('Não foi possível carregar sua lista. Verifique sua conexão e tente novamente.')
+      setError("Couldn't load your list. Check your connection and try again.")
     }
   }, [])
 
@@ -85,7 +88,7 @@ export function WatchListPage() {
       setWatchlist(data)
     } catch (err) {
       console.error(err)
-      showToast('Não foi possível atualizar a lista.')
+      showToast("Couldn't refresh the list.")
     }
   }, [showToast])
 
@@ -128,25 +131,30 @@ export function WatchListPage() {
   }, [watchlist])
 
   async function handleWatch(entry: WatchlistEntry) {
+    // A swipe-triggered mark re-renders the list with a new row in the same screen
+    // position, which can register a second swipe as part of the same physical
+    // gesture. This cooldown blocks that immediate re-trigger.
+    if (Date.now() - lastMarkedAtRef.current < MARK_COOLDOWN_MS) return
+    lastMarkedAtRef.current = Date.now()
     try {
       await tvtimeWriteService.watchEpisode(entry.episode_id)
       await refreshWatchlist()
     } catch (err) {
       console.error(err)
-      showToast('Não foi possível marcar como visto.')
+      showToast("Couldn't mark as watched.")
     }
   }
 
   if (error) {
     return (
       <div className="min-h-screen bg-tvtime-900 pb-20 flex flex-col items-center justify-center px-6 text-center">
-        <p className="text-tvtime-100 font-semibold mb-2">Algo deu errado</p>
+        <p className="text-tvtime-100 font-semibold mb-2">Something went wrong</p>
         <p className="text-tvtime-300 text-sm mb-6">{error}</p>
         <button
           onClick={() => load()}
           className="bg-tvtime-100 text-tvtime-900 rounded-full px-4 py-2 text-sm font-semibold"
         >
-          Tentar novamente
+          Try again
         </button>
       </div>
     )
@@ -164,10 +172,10 @@ export function WatchListPage() {
   if (isEmpty) {
     return (
       <div className="min-h-screen bg-tvtime-900 pb-20 flex flex-col items-center justify-center px-6 text-center">
-        <p className="text-tvtime-100 font-semibold mb-2">Nenhuma série ainda</p>
-        <p className="text-tvtime-300 text-sm mb-6">Adicione séries que você está vendo ou quer ver.</p>
+        <p className="text-tvtime-100 font-semibold mb-2">No shows yet</p>
+        <p className="text-tvtime-300 text-sm mb-6">Add shows you're watching or want to watch.</p>
         <Link to="/search" className="bg-tvtime-100 text-tvtime-900 rounded-full px-4 py-2 text-sm font-semibold">
-          Adicionar série
+          Add show
         </Link>
       </div>
     )

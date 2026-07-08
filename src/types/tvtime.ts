@@ -3,7 +3,7 @@ import type { User } from '@supabase/supabase-js'
 
 // --- Domain types -----------------------------------------------------
 
-export type ShowStatus = 'watching' | 'finished' | 'want_to_see' | 'dropped'
+export type ShowStatus = 'watching' | 'dropped'
 
 export interface WatchlistEntry {
   episode_id: string
@@ -92,11 +92,6 @@ export interface PrivateRouteProps {
 export interface ShowRowProps {
   entry: WatchlistEntry
   onWatch: (entry: WatchlistEntry) => void
-}
-
-export interface StatusPickerSheetProps {
-  onSelect: (status: ShowStatus) => void
-  onCancel: () => void
 }
 
 export interface ShowEpisodeDetail {

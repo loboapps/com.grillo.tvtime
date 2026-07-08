@@ -1,17 +1,24 @@
 import { useRef, useState, type PointerEvent } from 'react'
 import { Link } from 'react-router-dom'
+import { icons } from '@/utils/icons'
 import type { ShowRowProps } from '@/types/tvtime'
 
-const SWIPE_THRESHOLD = 80
+// Must drag nearly the full row width so the green "Watched" background is fully
+// revealed before the swipe registers as a mark-as-watched action.
+const SWIPE_FRACTION = 0.9
+const FALLBACK_ROW_WIDTH = 320
 
 export function ShowRow({ entry, onWatch }: ShowRowProps) {
   const [dragX, setDragX] = useState(0)
   const startX = useRef<number | null>(null)
   const dragging = useRef(false)
+  const rowRef = useRef<HTMLDivElement | null>(null)
+  const thresholdRef = useRef(FALLBACK_ROW_WIDTH * SWIPE_FRACTION)
 
   function handlePointerDown(e: PointerEvent<HTMLDivElement>) {
     startX.current = e.clientX
     dragging.current = true
+    thresholdRef.current = (rowRef.current?.offsetWidth ?? FALLBACK_ROW_WIDTH) * SWIPE_FRACTION
   }
 
   function handlePointerMove(e: PointerEvent<HTMLDivElement>) {
@@ -22,7 +29,7 @@ export function ShowRow({ entry, onWatch }: ShowRowProps) {
 
   function handlePointerUp() {
     dragging.current = false
-    if (dragX >= SWIPE_THRESHOLD) {
+    if (dragX >= thresholdRef.current) {
       onWatch(entry)
     }
     setDragX(0)
@@ -30,9 +37,10 @@ export function ShowRow({ entry, onWatch }: ShowRowProps) {
   }
 
   return (
-    <div className="relative overflow-hidden border-b border-tvtime-700">
-      <div className="absolute inset-0 bg-green-600 flex items-center px-4 text-white font-semibold">
-        Visto
+    <div ref={rowRef} className="relative overflow-hidden border-b border-tvtime-700">
+      <div className="absolute inset-0 bg-green-600 flex items-center gap-2 px-4 text-white font-semibold">
+        <icons.check size={18} />
+        Watched
       </div>
       <div
         className="relative flex gap-3 px-4 py-3 bg-tvtime-900"

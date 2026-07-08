@@ -16,11 +16,11 @@ describe('isActiveTmdbStatus', () => {
 })
 
 describe('formatActiveLabel', () => {
-  it('returns Ativa for active statuses', () => {
-    expect(formatActiveLabel('Returning Series')).toBe('Ativa')
+  it('returns Active for active statuses', () => {
+    expect(formatActiveLabel('Returning Series')).toBe('Active')
   })
 
-  it('returns Encerrada for ended statuses', () => {
-    expect(formatActiveLabel('Ended')).toBe('Encerrada')
+  it('returns Ended for ended statuses', () => {
+    expect(formatActiveLabel('Ended')).toBe('Ended')
   })
 })

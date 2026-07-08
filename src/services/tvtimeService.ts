@@ -92,7 +92,7 @@ export const tvtimeWriteService = {
     if (error) throw error
   },
 
-  async addShowFromDetails(details: TmdbShowDetails, status: ShowStatus): Promise<void> {
+  async addShowFromDetails(details: TmdbShowDetails): Promise<void> {
     const episodes = await tvtimeService.fetchAllEpisodes(details.id, details.seasons)
     await tvtimeWriteService.addShow({
       tmdbId: details.id,
@@ -102,7 +102,7 @@ export const tvtimeWriteService = {
       tmdbStatus: details.status,
       numberOfSeasons: details.number_of_seasons,
       numberOfEpisodes: details.number_of_episodes,
-      userStatus: status,
+      userStatus: 'watching',
       seasons: details.seasons,
       episodes,
     })

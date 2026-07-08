@@ -3,19 +3,20 @@ import { Link } from 'react-router-dom'
 import { icons } from '@/utils/icons'
 import { tvtimeService, tvtimeWriteService } from '@/services/tvtimeService'
 import { formatActiveLabel } from '@/utils/showStatusLabel'
-import { StatusPickerSheet } from '@/components/StatusPickerSheet'
 import { sortSearchResultsByRelevance } from '@/utils/sortSearchResults'
-import type { ShowStatus, SearchResultWithDetails } from '@/types/tvtime'
+import { Toast } from '@/components/Toast'
+import { useToast } from '@/utils/useToast'
+import type { SearchResultWithDetails } from '@/types/tvtime'
 
 export function SearchPage() {
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<SearchResultWithDetails[]>([])
   const [loading, setLoading] = useState(false)
   const [searchError, setSearchError] = useState<string | null>(null)
-  const [pickingShow, setPickingShow] = useState<SearchResultWithDetails | null>(null)
   const [trackedIds, setTrackedIds] = useState<Set<number>>(new Set())
   const latestQueryRef = useRef('')
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const { toast, showToast } = useToast()
 
   useEffect(() => {
     tvtimeService
@@ -44,7 +45,7 @@ export function SearchPage() {
     } catch (err) {
       console.error(err)
       if (latestQueryRef.current !== value) return
-      setSearchError('Não foi possível buscar. Tente novamente.')
+      setSearchError("Couldn't search. Try again.")
       setResults([])
     } finally {
       if (latestQueryRef.current === value) setLoading(false)
@@ -71,10 +72,14 @@ export function SearchPage() {
     }, 300)
   }
 
-  async function handleAdd(result: SearchResultWithDetails, status: ShowStatus) {
-    await tvtimeWriteService.addShowFromDetails(result.details, status)
-    setTrackedIds((prev) => new Set(prev).add(result.id))
-    setPickingShow(null)
+  async function handleAdd(result: SearchResultWithDetails) {
+    try {
+      await tvtimeWriteService.addShowFromDetails(result.details)
+      setTrackedIds((prev) => new Set(prev).add(result.id))
+    } catch (err) {
+      console.error(err)
+      showToast("Couldn't add this show.")
+    }
   }
 
   const showNoResults = !loading && !searchError && query.trim().length >= 2 && results.length === 0
@@ -87,13 +92,13 @@ export function SearchPage() {
           <input
             value={query}
             onChange={(e) => handleSearch(e.target.value)}
-            placeholder="Buscar série..."
+            placeholder="Search shows..."
             className="bg-transparent flex-1 text-tvtime-100 outline-none"
           />
         </div>
       </div>
 
-      {loading && <p className="text-tvtime-300 text-center">Buscando...</p>}
+      {loading && <p className="text-tvtime-300 text-center">Searching...</p>}
 
       {searchError && (
         <div className="px-4 py-3 text-center">
@@ -102,12 +107,12 @@ export function SearchPage() {
             onClick={() => runSearch(query)}
             className="bg-tvtime-100 text-tvtime-900 rounded-full px-4 py-2 text-sm font-semibold"
           >
-            Tentar novamente
+            Try again
           </button>
         </div>
       )}
 
-      {showNoResults && <p className="text-tvtime-300 text-center py-4">Nenhum resultado encontrado.</p>}
+      {showNoResults && <p className="text-tvtime-300 text-center py-4">No results found.</p>}
 
       <ul>
         {results.map((r) => (
@@ -123,14 +128,14 @@ export function SearchPage() {
               <div className="flex-1 min-w-0">
                 <p className="text-tvtime-100 font-semibold truncate">{r.name}</p>
                 <p className="text-tvtime-300 text-sm">
-                  {r.details.number_of_seasons} temp. · {r.details.number_of_episodes} eps ·{' '}
+                  {r.details.number_of_seasons} seasons · {r.details.number_of_episodes} eps ·{' '}
                   {formatActiveLabel(r.details.status)}
                 </p>
               </div>
             </Link>
             <button
               disabled={trackedIds.has(r.id)}
-              onClick={() => setPickingShow(r)}
+              onClick={() => handleAdd(r)}
               className={`w-8 h-8 rounded-md flex items-center justify-center shrink-0 ${
                 trackedIds.has(r.id) ? 'bg-tvtime-700' : 'bg-yellow-500'
               } disabled:opacity-60`}
@@ -145,12 +150,7 @@ export function SearchPage() {
         ))}
       </ul>
 
-      {pickingShow && (
-        <StatusPickerSheet
-          onCancel={() => setPickingShow(null)}
-          onSelect={(status) => handleAdd(pickingShow, status)}
-        />
-      )}
+      {toast && <Toast message={toast.message} variant={toast.variant} />}
     </div>
   )
 }

@@ -13,13 +13,17 @@ export function SeasonAccordion({ season, stillPathLookup, trackable, onToggleEp
         className="w-full flex items-center justify-between px-4 py-3 text-left"
       >
         <span className="text-tvtime-100 font-semibold">
-          {season.name ?? `Temporada ${season.season_number}`}
+          {season.name ?? `Season ${season.season_number}`}
         </span>
         <span className="flex items-center gap-2">
           <span className="text-tvtime-300 text-sm">
             {season.watched_count}/{season.episode_count}
           </span>
           {fullyWatched && <icons.check size={16} className="text-yellow-500" />}
+          <icons.chevronDown
+            size={16}
+            className={`text-tvtime-300 transition-transform ${open ? 'rotate-180' : ''}`}
+          />
         </span>
       </button>
 

@@ -35,13 +35,13 @@ export function LoginPage() {
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          placeholder="Senha"
+          placeholder="Password"
           className="w-full rounded-md bg-tvtime-700 text-tvtime-100 px-4 py-3"
           required
         />
         {error && <p className="text-red-400 text-sm">{error}</p>}
         <button type="submit" className="w-full rounded-md bg-tvtime-100 text-tvtime-900 py-3 font-semibold">
-          Entrar
+          Log in
         </button>
       </form>
     </div>
