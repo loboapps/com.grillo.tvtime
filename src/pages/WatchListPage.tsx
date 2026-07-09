@@ -32,10 +32,11 @@ function replaceShowInWatchlist(watchlist: Watchlist, showId: string, scoped: Wa
 }
 
 // Syncs exactly the shows passed in — bounded by whatever the caller already
-// knows is relevant (e.g. currently visible in the watchlist), not "every
-// stale show ever tracked". Broader background freshness (including dropped/
-// finished shows that could still get a revival season) is the GitHub Actions
-// cron's job (.github/workflows/app_wrk_sync_shows.yml), not this page load.
+// knows is relevant (currently visible in the watchlist, plus anything whose
+// own known next episode air date has arrived), not "every tracked show".
+// The daily cron (.github/workflows/app_wrk_sync_shows.yml) has a different
+// job: an unconditional whole-library sweep for seasons TMDB hasn't told us
+// about yet, which is what sets next_air_date in the first place.
 async function syncShows(tmdbIds: number[]): Promise<void> {
   await Promise.all(
     tmdbIds.map(async (tmdbId) => {
@@ -49,6 +50,7 @@ async function syncShows(tmdbIds: number[]): Promise<void> {
           details.number_of_episodes,
           details.seasons,
           episodes,
+          details.next_episode_to_air?.air_date ?? null,
         )
       } catch (err) {
         // One show's TMDB sync failing must never block the rest of the list.
@@ -104,11 +106,14 @@ export function WatchListPage() {
     }
 
     // Show the list immediately with whatever's already in the DB, then sync
-    // just the shows currently visible in the background — bounded by list
-    // size, not total tracked shows, so this never blocks the page and never
-    // fires an unbounded burst of requests.
+    // in the background: shows currently visible, plus any show (regardless
+    // of status) whose own known next episode air date has arrived. Bounded
+    // by list size + a normally-tiny schedule-due set, never "every tracked
+    // show", so this never blocks the page or fires an unbounded burst.
     try {
-      await syncShows(visibleTmdbIds(data))
+      const dueIds = await tvtimeService.loadStaleShowIds()
+      const toSync = [...new Set([...visibleTmdbIds(data), ...dueIds])]
+      await syncShows(toSync)
       const refreshed = await tvtimeService.loadWatchlist()
       setWatchlist(refreshed)
     } catch (err) {

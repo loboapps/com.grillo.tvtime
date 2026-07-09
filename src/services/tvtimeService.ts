@@ -38,6 +38,14 @@ export const tvtimeService = {
     return data as number[]
   },
 
+  // Schedule-driven, not a blind staleness window: only shows whose own known
+  // next episode air date has actually arrived, regardless of status.
+  async loadStaleShowIds(): Promise<number[]> {
+    const { data, error } = await supabase.rpc('tvtime_load_stale_shows')
+    if (error) throw error
+    return data as number[]
+  },
+
   async searchShows(query: string): Promise<TmdbSearchResult[]> {
     const data = await invokeTmdb<{ results: TmdbSearchResult[] }>({ action: 'search', query })
     return data.results
@@ -85,6 +93,7 @@ export const tvtimeWriteService = {
       p_user_status: input.userStatus,
       p_seasons: input.seasons,
       p_episodes: input.episodes,
+      p_next_air_date: input.nextAirDate,
     })
     if (error) throw error
   },
@@ -102,6 +111,7 @@ export const tvtimeWriteService = {
       userStatus: 'watching',
       seasons: details.seasons,
       episodes,
+      nextAirDate: details.next_episode_to_air?.air_date ?? null,
     })
   },
 
@@ -129,6 +139,7 @@ export const tvtimeWriteService = {
     numberOfEpisodes: number,
     seasons: TmdbSeason[],
     episodes: (TmdbEpisode & { season_number: number })[],
+    nextAirDate: string | null,
   ): Promise<void> {
     const { error } = await supabase.rpc('tvtime_sync_show', {
       p_tmdb_id: tmdbId,
@@ -137,6 +148,7 @@ export const tvtimeWriteService = {
       p_number_of_episodes: numberOfEpisodes,
       p_seasons: seasons,
       p_episodes: episodes,
+      p_next_air_date: nextAirDate,
     })
     if (error) throw error
   },

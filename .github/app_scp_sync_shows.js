@@ -13,54 +13,114 @@ async function tmdbGet(path) {
   return res.json()
 }
 
-async function fetchAllEpisodes(tmdbId, seasons) {
-  const bySeasonPromises = seasons.map(async (season) => {
-    const data = await tmdbGet(`/tv/${tmdbId}/season/${season.season_number}`)
-    return (data.episodes ?? []).map((ep) => ({ ...ep, season_number: season.season_number }))
-  })
-  return (await Promise.all(bySeasonPromises)).flat()
+async function fetchSeason(tmdbId, seasonNumber) {
+  const data = await tmdbGet(`/tv/${tmdbId}/season/${seasonNumber}`)
+  return (data.episodes ?? []).map((ep) => ({ ...ep, season_number: seasonNumber }))
 }
 
-async function syncOneShow(tmdbId) {
-  const details = await tmdbGet(`/tv/${tmdbId}`)
-  const episodes = await fetchAllEpisodes(tmdbId, details.seasons ?? [])
+// This is the only unconditional, whole-library step — discovering a season TMDB hasn't told
+// us about yet is exactly what feeds next_air_date, so it can't itself be schedule-gated.
+// Everything else (the Watch List page's own background sync) IS schedule-gated, using the
+// next_air_date this step produces.
+async function main() {
+  const { data: shows, error: showsErr } = await supabase
+    .from('tvtime_shows')
+    .select('id, tmdb_id, number_of_seasons')
+  if (showsErr) throw showsErr
 
-  if (DRY_RUN) {
-    console.log(`  [dry-run] would sync ${tmdbId} (${details.name}): ${details.seasons?.length ?? 0} seasons, ${episodes.length} episodes`)
-    return
+  // A NULL air_date on an unwatched episode already *is* the "still missing data" signal —
+  // no separate tracking table needed. Two plain queries (not a PostgREST embed join, to keep
+  // this simple and predictable) get us show_id -> {season_id...} -> season_number.
+  const { data: tbaEpisodes, error: tbaErr } = await supabase
+    .from('tvtime_episodes')
+    .select('show_id, season_id')
+    .is('air_date', null)
+    .eq('watched', false)
+  if (tbaErr) throw tbaErr
+
+  const tbaSeasonIds = [...new Set(tbaEpisodes.map((e) => e.season_id))]
+  const { data: tbaSeasons, error: tbaSeasonsErr } =
+    tbaSeasonIds.length > 0
+      ? await supabase.from('tvtime_seasons').select('id, season_number').in('id', tbaSeasonIds)
+      : { data: [], error: null }
+  if (tbaSeasonsErr) throw tbaSeasonsErr
+  const seasonNumberById = new Map(tbaSeasons.map((s) => [s.id, s.season_number]))
+
+  const tbaSeasonsByShow = new Map() // show_id -> Set(season_number)
+  for (const ep of tbaEpisodes) {
+    const seasonNumber = seasonNumberById.get(ep.season_id)
+    if (seasonNumber === undefined) continue
+    if (!tbaSeasonsByShow.has(ep.show_id)) tbaSeasonsByShow.set(ep.show_id, new Set())
+    tbaSeasonsByShow.get(ep.show_id).add(seasonNumber)
   }
 
-  const { error } = await supabase.rpc('tvtime_sync_show', {
-    p_tmdb_id: tmdbId,
-    p_tmdb_status: details.status,
-    p_number_of_seasons: details.number_of_seasons,
-    p_number_of_episodes: details.number_of_episodes,
-    p_seasons: details.seasons,
-    p_episodes: episodes,
-  })
-  if (error) throw error
-}
+  console.log(`${shows.length} tracked show(s). ${tbaSeasonsByShow.size} have a TBA episode to re-check.`)
 
-async function main() {
-  const { data: staleIds, error } = await supabase.rpc('tvtime_load_stale_shows')
-  if (error) throw error
-
-  console.log(`${staleIds.length} show(s) due for sync${DRY_RUN ? ' (dry run)' : ''}`)
-
-  let ok = 0
+  let unchanged = 0
+  let updated = 0
   let failed = 0
-  for (const tmdbId of staleIds) {
+
+  for (const show of shows) {
     try {
-      await syncOneShow(tmdbId)
-      ok++
+      const details = await tmdbGet(`/tv/${show.tmdb_id}`)
+      const nextAirDate = details.next_episode_to_air?.air_date ?? null
+
+      const newSeasonNumbers = []
+      for (let n = (show.number_of_seasons ?? 0) + 1; n <= details.number_of_seasons; n++) {
+        newSeasonNumbers.push(n)
+      }
+      const tbaSeasonNumbers = [...(tbaSeasonsByShow.get(show.id) ?? [])]
+      const seasonsToFetch = [...new Set([...newSeasonNumbers, ...tbaSeasonNumbers])]
+
+      if (seasonsToFetch.length === 0) {
+        // Nothing changed and nothing missing — just keep status/counts/next_air_date/synced_at
+        // current. No season/episode fetch, no tvtime_sync_show round trip.
+        if (!DRY_RUN) {
+          const { error } = await supabase
+            .from('tvtime_shows')
+            .update({
+              tmdb_status: details.status,
+              number_of_episodes: details.number_of_episodes,
+              next_air_date: nextAirDate,
+              synced_at: new Date().toISOString(),
+            })
+            .eq('id', show.id)
+          if (error) throw error
+        }
+        unchanged++
+        continue
+      }
+
+      const seasonMetas = details.seasons.filter((s) => seasonsToFetch.includes(s.season_number))
+      const episodes = (
+        await Promise.all(seasonsToFetch.map((n) => fetchSeason(show.tmdb_id, n)))
+      ).flat()
+
+      if (DRY_RUN) {
+        console.log(
+          `  [dry-run] would update ${show.tmdb_id} (${details.name}): seasons ${seasonsToFetch.join(', ')}, ${episodes.length} episodes`,
+        )
+      } else {
+        const { error } = await supabase.rpc('tvtime_sync_show', {
+          p_tmdb_id: show.tmdb_id,
+          p_tmdb_status: details.status,
+          p_number_of_seasons: details.number_of_seasons,
+          p_number_of_episodes: details.number_of_episodes,
+          p_seasons: seasonMetas,
+          p_episodes: episodes,
+          p_next_air_date: nextAirDate,
+        })
+        if (error) throw error
+      }
+      updated++
     } catch (err) {
       failed++
-      console.error(`  failed to sync ${tmdbId}:`, err.message)
+      console.error(`  failed on show ${show.tmdb_id}:`, err.message)
     }
   }
 
-  console.log(`Done: ${ok} synced, ${failed} failed`)
-  if (failed > 0 && ok === 0) process.exitCode = 1
+  console.log(`Done: ${unchanged} unchanged, ${updated} updated (new season or resolved date), ${failed} failed`)
+  if (failed > 0 && updated === 0 && unchanged === 0) process.exitCode = 1
 }
 
 main().catch((err) => {

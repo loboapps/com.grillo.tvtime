@@ -50,6 +50,7 @@ export interface TmdbShowDetails {
   number_of_episodes: number
   seasons: TmdbSeason[]
   networks: { name: string }[]
+  next_episode_to_air: { air_date: string | null } | null
 }
 
 export interface TmdbEpisode {
@@ -70,6 +71,7 @@ export interface AddShowInput {
   userStatus: ShowStatus
   seasons: TmdbSeason[]
   episodes: (TmdbEpisode & { season_number: number })[]
+  nextAirDate: string | null
 }
 
 export interface SearchResultWithDetails extends TmdbSearchResult {

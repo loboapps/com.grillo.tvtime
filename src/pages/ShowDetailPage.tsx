@@ -92,6 +92,7 @@ export function ShowDetailPage() {
               liveDetails.number_of_episodes,
               liveDetails.seasons,
               episodes,
+              liveDetails.next_episode_to_air?.air_date ?? null,
             )
             .then(() => refreshDetail())
             .catch((err) => console.error('Background season-count sync failed:', err))
@@ -188,6 +189,7 @@ export function ShowDetailPage() {
         liveDetails.number_of_episodes,
         liveDetails.seasons,
         episodes,
+        liveDetails.next_episode_to_air?.air_date ?? null,
       )
       setTmdbDetails(liveDetails)
       setStillPathLookup(buildStillPathLookup(episodes))
