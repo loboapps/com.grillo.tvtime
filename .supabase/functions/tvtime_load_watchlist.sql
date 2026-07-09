@@ -21,6 +21,7 @@ with next_ep as (
   from tvtime_episodes e
   join tvtime_seasons s on s.id = e.season_id
   where e.watched = false
+    and s.season_number != 0
     and (p_show_id is null or e.show_id = p_show_id)
   order by
     e.show_id,
@@ -29,11 +30,13 @@ with next_ep as (
     e.episode_number asc
 ),
 pending_counts as (
-  select show_id, count(*) as pending
-  from tvtime_episodes
-  where watched = false and air_date is not null and air_date <= current_date
-    and (p_show_id is null or show_id = p_show_id)
-  group by show_id
+  select e.show_id, count(*) as pending
+  from tvtime_episodes e
+  join tvtime_seasons s on s.id = e.season_id
+  where e.watched = false and e.air_date is not null and e.air_date <= current_date
+    and s.season_number != 0
+    and (p_show_id is null or e.show_id = p_show_id)
+  group by e.show_id
 ),
 last_watched as (
   select show_id, max(watched_at) as last_watched_at
@@ -68,6 +71,9 @@ rows as (
   where sh.user_status != 'dropped'
     and (p_show_id is null or sh.id = p_show_id)
 )
+-- Specials (season 0) are excluded from next_ep/pending_counts: they're stored like any other
+-- episode, but season 0 sorts before every real season, so an unwatched special would otherwise
+-- always win as "next episode to watch" ahead of the actual next real episode.
 -- Categorization is fully derived from watch behavior (15-day window), never from user_status
 -- beyond excluding dropped shows: watching = watched recently OR a followed show's new episode
 -- arrived recently; want_to_see = never watched; not_seen_in_a_while = watched before, nothing

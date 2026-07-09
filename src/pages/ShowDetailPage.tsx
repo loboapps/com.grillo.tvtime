@@ -45,6 +45,21 @@ export function ShowDetailPage() {
 
   const notFound = Number.isNaN(id)
 
+  // Refreshes only our DB-tracked state (seasons/episodes/watched flags), not the
+  // live TMDB fetch or the loading gate — a full load() here would unmount
+  // SeasonAccordion (collapsing every open season) and re-fetch TMDB per season
+  // on every single episode toggle.
+  const refreshDetail = useCallback(async () => {
+    try {
+      const showDetail = await tvtimeService.loadShow(id)
+      setDetail(showDetail)
+      setError(null)
+    } catch (err) {
+      console.error(err)
+      setError(LOAD_ERROR_MESSAGE)
+    }
+  }, [id])
+
   const load = useCallback(async () => {
     if (notFound) {
       setLoading(false)
@@ -61,28 +76,34 @@ export function ShowDetailPage() {
       setTmdbDetails(liveDetails)
       setStillPathLookup(buildStillPathLookup(episodes))
       setError(null)
+
+      // We already fetch live TMDB details on every visit to a tracked show — piggyback on
+      // that to catch a season count mismatch (e.g. a revival) and self-heal silently, instead
+      // of waiting for the daily cron or a manual refresh. No extra TMDB calls: everything
+      // needed (seasons/episodes) is already in hand from the fetches above.
+      if (showDetail) {
+        const storedSeasonCount = showDetail.seasons.filter((s) => s.season_number !== 0).length
+        if (storedSeasonCount !== liveDetails.number_of_seasons) {
+          tvtimeWriteService
+            .syncShow(
+              id,
+              liveDetails.status,
+              liveDetails.number_of_seasons,
+              liveDetails.number_of_episodes,
+              liveDetails.seasons,
+              episodes,
+            )
+            .then(() => refreshDetail())
+            .catch((err) => console.error('Background season-count sync failed:', err))
+        }
+      }
     } catch (err) {
       console.error(err)
       setError(LOAD_ERROR_MESSAGE)
     } finally {
       setLoading(false)
     }
-  }, [id, notFound])
-
-  // Refreshes only our DB-tracked state (seasons/episodes/watched flags), not the
-  // live TMDB fetch or the loading gate — a full load() here would unmount
-  // SeasonAccordion (collapsing every open season) and re-fetch TMDB per season
-  // on every single episode toggle.
-  const refreshDetail = useCallback(async () => {
-    try {
-      const showDetail = await tvtimeService.loadShow(id)
-      setDetail(showDetail)
-      setError(null)
-    } catch (err) {
-      console.error(err)
-      setError(LOAD_ERROR_MESSAGE)
-    }
-  }, [id])
+  }, [id, notFound, refreshDetail])
 
   useEffect(() => {
     load()
