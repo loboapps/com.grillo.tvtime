@@ -3,7 +3,7 @@ import type { User } from '@supabase/supabase-js'
 
 // --- Domain types -----------------------------------------------------
 
-export type ShowStatus = 'watching' | 'dropped'
+export type ShowStatus = 'watching' | 'finished' | 'dropped'
 
 export interface WatchlistEntry {
   episode_id: string

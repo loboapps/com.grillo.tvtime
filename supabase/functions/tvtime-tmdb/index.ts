@@ -9,10 +9,11 @@ const corsHeaders = {
 };
 
 interface RequestBody {
-  action: "search" | "show" | "season";
+  action: "search" | "show" | "season" | "find_by_tvdb";
   query?: string;
   id?: number;
   season?: number;
+  tvdbId?: number;
 }
 
 serve(async (req) => {
@@ -30,6 +31,8 @@ serve(async (req) => {
       tmdbUrl = `${TMDB_BASE}/tv/${body.id}?api_key=${TMDB_API_KEY}`;
     } else if (body.action === "season") {
       tmdbUrl = `${TMDB_BASE}/tv/${body.id}/season/${body.season}?api_key=${TMDB_API_KEY}`;
+    } else if (body.action === "find_by_tvdb") {
+      tmdbUrl = `${TMDB_BASE}/find/${body.tvdbId}?external_source=tvdb_id&api_key=${TMDB_API_KEY}`;
     } else {
       return new Response(JSON.stringify({ error: "unknown action" }), {
         status: 400,

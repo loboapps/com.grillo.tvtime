@@ -68,12 +68,14 @@ rows as (
   where sh.user_status != 'dropped'
     and (p_show_id is null or sh.id = p_show_id)
 )
--- Categorization is fully derived from watch behavior (15-day window), never from a stored
--- status: watching = watched recently OR a followed show's new episode arrived recently;
--- want_to_see = never watched; not_seen_in_a_while = watched before, nothing recently, no new
--- episode pending. These three conditions are mutually exclusive by construction (see below),
--- so a show can never appear in more than one bucket. Shows with everything watched have no
--- next_ep row and therefore appear in none of the three ("finished" is implicit, not listed).
+-- Categorization is fully derived from watch behavior (15-day window), never from user_status
+-- beyond excluding dropped shows: watching = watched recently OR a followed show's new episode
+-- arrived recently; want_to_see = never watched; not_seen_in_a_while = watched before, nothing
+-- recently, no new episode pending. Mutually exclusive by construction (see below). Shows with
+-- everything watched have no next_ep row and appear in none of the three, regardless of whether
+-- user_status has already flipped to 'finished' — filtering on user_status = 'watching' instead
+-- of != 'dropped' would wrongly hide a finished show the moment a new season gets synced in
+-- (tvtime_sync_show doesn't re-flip the status; only tvtime_watch_episode does).
 -- p_show_id scopes every CTE to one show (used to refresh a single row after a write without
 -- recomputing the whole list); left null, it behaves exactly as before.
 select jsonb_build_object(
