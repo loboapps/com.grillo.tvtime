@@ -40,6 +40,12 @@ begin
     where id = p_episode_id;
   end if;
 
+  -- Marking any episode watched on a dropped show means you're back — un-drop it. There's no
+  -- other way to "undrop" today (no UI for it yet), so this is the only path back to watching.
+  if p_watched then
+    update tvtime_shows set user_status = 'watching' where id = v_show_id and user_status = 'dropped';
+  end if;
+
   -- Keep user_status in sync with whether every non-special episode is now watched.
   -- Specials (season 0) never count toward "finished" since the app doesn't track them.
   -- "Finished" also requires the show itself to have actually ended (tmdb_status not one of
