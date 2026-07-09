@@ -46,4 +46,12 @@ describe('hasEarlierUnwatchedEpisode', () => {
     ]
     expect(hasEarlierUnwatchedEpisode(seasons, 2, 1)).toBe(false)
   })
+
+  it('ignores unwatched specials (season 0) — they are not part of the sequential watch order', () => {
+    const seasons = [
+      makeSeason(0, [{ episode_number: 1, watched: false }]),
+      makeSeason(1, [{ episode_number: 1, watched: true }, { episode_number: 2, watched: false }]),
+    ]
+    expect(hasEarlierUnwatchedEpisode(seasons, 1, 2)).toBe(false)
+  })
 })

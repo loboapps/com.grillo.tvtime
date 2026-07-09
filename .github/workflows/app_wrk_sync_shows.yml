@@ -1,0 +1,54 @@
+name: Sync Show Data
+
+on:
+  # Roda todo dia às 5h40 UTC — depois dos crons do finances (2h40/3h40/4h40 UTC),
+  # essa sincronização é a de menor prioridade das quatro.
+  schedule:
+    - cron: '40 5 * * *'
+
+  # Permite rodar manualmente pelo GitHub
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run (não grava na base, só mostra o que seria sincronizado)'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
+
+jobs:
+  sync-shows:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Definir modo dry-run
+        run: |
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            echo "EFFECTIVE_DRY_RUN=false" >> $GITHUB_ENV
+            echo "🕐 Scheduled run — sincronizando de verdade"
+          else
+            echo "EFFECTIVE_DRY_RUN=${{ github.event.inputs.dry_run }}" >> $GITHUB_ENV
+            echo "🖐️  Manual run — dry_run=${{ github.event.inputs.dry_run }}"
+          fi
+
+      - name: Sincronizar séries
+        run: node .github/app_scp_sync_shows.js
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+          DRY_RUN: ${{ env.EFFECTIVE_DRY_RUN }}

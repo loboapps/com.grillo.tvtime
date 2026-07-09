@@ -31,10 +31,14 @@ function replaceShowInWatchlist(watchlist: Watchlist, showId: string, scoped: Wa
   }
 }
 
-async function syncStaleShows(): Promise<void> {
-  const staleIds = await tvtimeService.loadStaleShowIds()
+// Syncs exactly the shows passed in — bounded by whatever the caller already
+// knows is relevant (e.g. currently visible in the watchlist), not "every
+// stale show ever tracked". Broader background freshness (including dropped/
+// finished shows that could still get a revival season) is the GitHub Actions
+// cron's job (.github/workflows/app_wrk_sync_shows.yml), not this page load.
+async function syncShows(tmdbIds: number[]): Promise<void> {
   await Promise.all(
-    staleIds.map(async (tmdbId) => {
+    tmdbIds.map(async (tmdbId) => {
       try {
         const details = await tvtimeService.getShowDetails(tmdbId)
         const episodes = await tvtimeService.fetchAllEpisodes(tmdbId, details.seasons)
@@ -52,6 +56,11 @@ async function syncStaleShows(): Promise<void> {
       }
     }),
   )
+}
+
+function visibleTmdbIds(watchlist: Watchlist): number[] {
+  const all = [...watchlist.watch_next, ...watchlist.not_seen_in_a_while, ...watchlist.want_to_see]
+  return [...new Set(all.map((e) => e.tmdb_id))]
 }
 
 function WatchListSkeleton() {
@@ -83,14 +92,27 @@ export function WatchListPage() {
   const { toast, showToast } = useToast()
 
   const load = useCallback(async () => {
+    let data: Watchlist
     try {
-      await syncStaleShows()
-      const data = await tvtimeService.loadWatchlist()
+      data = await tvtimeService.loadWatchlist()
       setWatchlist(data)
       setError(null)
     } catch (err) {
       console.error(err)
       setError("Couldn't load your list. Check your connection and try again.")
+      return
+    }
+
+    // Show the list immediately with whatever's already in the DB, then sync
+    // just the shows currently visible in the background — bounded by list
+    // size, not total tracked shows, so this never blocks the page and never
+    // fires an unbounded burst of requests.
+    try {
+      await syncShows(visibleTmdbIds(data))
+      const refreshed = await tvtimeService.loadWatchlist()
+      setWatchlist(refreshed)
+    } catch (err) {
+      console.error('Background sync failed:', err)
     }
   }, [])
 

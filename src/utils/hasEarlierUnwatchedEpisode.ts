@@ -6,6 +6,7 @@ export function hasEarlierUnwatchedEpisode(
   targetEpisodeNumber: number,
 ): boolean {
   for (const season of seasons) {
+    if (season.season_number === 0) continue // specials aren't part of the sequential watch order
     for (const episode of season.episodes) {
       if (episode.watched) continue
       if (season.season_number < targetSeasonNumber) return true

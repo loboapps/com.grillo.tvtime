@@ -32,12 +32,6 @@ export const tvtimeService = {
     return data as ShowDetail | null
   },
 
-  async loadStaleShowIds(): Promise<number[]> {
-    const { data, error } = await supabase.rpc('tvtime_load_stale_shows')
-    if (error) throw error
-    return data as number[]
-  },
-
   async loadTrackedShowIds(): Promise<number[]> {
     const { data, error } = await supabase.rpc('tvtime_load_tracked_show_ids')
     if (error) throw error
@@ -62,17 +56,17 @@ export const tvtimeService = {
     return data.episodes
   },
 
+  // Includes season 0 (specials) — they're stored like any other episode; any
+  // filtering for display purposes happens in the UI, not at the data layer.
   async fetchAllEpisodes(
     tmdbId: number,
     seasons: TmdbSeason[],
   ): Promise<(TmdbEpisode & { season_number: number })[]> {
     const episodesBySeason = await Promise.all(
-      seasons
-        .filter((season) => season.season_number !== 0)
-        .map(async (season) => {
-          const episodes = await tvtimeService.getSeasonEpisodes(tmdbId, season.season_number)
-          return episodes.map((ep) => ({ ...ep, season_number: season.season_number }))
-        }),
+      seasons.map(async (season) => {
+        const episodes = await tvtimeService.getSeasonEpisodes(tmdbId, season.season_number)
+        return episodes.map((ep) => ({ ...ep, season_number: season.season_number }))
+      }),
     )
     return episodesBySeason.flat()
   },

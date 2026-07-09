@@ -40,6 +40,7 @@ export function ShowDetailPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [pendingMark, setPendingMark] = useState<string | null>(null)
+  const [refreshing, setRefreshing] = useState(false)
   const { toast, showToast } = useToast()
 
   const notFound = Number.isNaN(id)
@@ -153,6 +154,31 @@ export function ShowDetailPage() {
     }
   }
 
+  async function handleRefresh() {
+    if (!detail || refreshing) return
+    setRefreshing(true)
+    try {
+      const liveDetails = await tvtimeService.getShowDetails(id)
+      const episodes = await tvtimeService.fetchAllEpisodes(id, liveDetails.seasons)
+      await tvtimeWriteService.syncShow(
+        id,
+        liveDetails.status,
+        liveDetails.number_of_seasons,
+        liveDetails.number_of_episodes,
+        liveDetails.seasons,
+        episodes,
+      )
+      setTmdbDetails(liveDetails)
+      setStillPathLookup(buildStillPathLookup(episodes))
+      await refreshDetail()
+    } catch (err) {
+      console.error(err)
+      showToast("Couldn't refresh this show.")
+    } finally {
+      setRefreshing(false)
+    }
+  }
+
   if (notFound) {
     return (
       <div className="min-h-screen bg-tvtime-900 flex flex-col items-center justify-center px-6 text-center">
@@ -204,6 +230,16 @@ export function ShowDetailPage() {
         >
           <icons.back size={24} className="text-tvtime-100" />
         </button>
+        {detail && (
+          <button
+            onClick={handleRefresh}
+            disabled={refreshing}
+            aria-label="Refresh show data"
+            className="absolute top-4 right-4 bg-tvtime-900/70 rounded-full p-1"
+          >
+            <icons.refresh size={24} className={`text-tvtime-100 ${refreshing ? 'animate-spin' : ''}`} />
+          </button>
+        )}
       </div>
 
       <div className="px-4 py-4">

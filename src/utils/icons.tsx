@@ -1,4 +1,4 @@
-import { Tv, Search, User, ChevronLeft, ChevronRight, ChevronDown, Plus, Check, Loader2 } from 'lucide-react'
+import { Tv, Search, User, ChevronLeft, ChevronRight, ChevronDown, Plus, Check, Loader2, RefreshCw } from 'lucide-react'
 
 export const icons = {
   shows: Tv,
@@ -10,4 +10,5 @@ export const icons = {
   plus: Plus,
   check: Check,
   spinner: Loader2,
+  refresh: RefreshCw,
 }
