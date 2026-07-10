@@ -27,7 +27,7 @@ export function ShowRow({ entry, onWatch, onWatched }: ShowRowProps) {
     return (
       <div className="mx-3 mb-3 rounded-2xl overflow-hidden min-h-32 flex items-center gap-2 px-4 bg-green-600 text-white font-semibold">
         <icons.check size={20} />
-        Watched
+        {entry.remaining === 0 ? 'Up to date' : 'Watched'}
       </div>
     )
   }

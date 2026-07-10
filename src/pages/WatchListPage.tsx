@@ -20,14 +20,21 @@ const SECTION_LABELS: Record<keyof Watchlist, string> = {
 // `scoped` is the result of tvtime_load_watchlist(showId) — the same 3-bucket
 // shape, just containing at most this one show's entry (or nothing, if it's
 // now finished/dropped). Splicing it in avoids recomputing every other show.
+// The replacement is spliced in at the removed entry's original index (not
+// appended) so the row doesn't jump to the end of the section.
+function spliceShow(entries: WatchlistEntry[], showId: string, replacement: WatchlistEntry[]): WatchlistEntry[] {
+  const index = entries.findIndex((e) => e.show_id === showId)
+  if (index === -1) return [...entries, ...replacement]
+  const result = [...entries]
+  result.splice(index, 1, ...replacement)
+  return result
+}
+
 function replaceShowInWatchlist(watchlist: Watchlist, showId: string, scoped: Watchlist): Watchlist {
   return {
-    watch_next: [...watchlist.watch_next.filter((e) => e.show_id !== showId), ...scoped.watch_next],
-    not_seen_in_a_while: [
-      ...watchlist.not_seen_in_a_while.filter((e) => e.show_id !== showId),
-      ...scoped.not_seen_in_a_while,
-    ],
-    want_to_see: [...watchlist.want_to_see.filter((e) => e.show_id !== showId), ...scoped.want_to_see],
+    watch_next: spliceShow(watchlist.watch_next, showId, scoped.watch_next),
+    not_seen_in_a_while: spliceShow(watchlist.not_seen_in_a_while, showId, scoped.not_seen_in_a_while),
+    want_to_see: spliceShow(watchlist.want_to_see, showId, scoped.want_to_see),
   }
 }
 
@@ -234,7 +241,7 @@ export function WatchListPage() {
           {SECTION_LABELS[currentSection]}
         </span>
       </div>
-      {sections.map((key) => (
+      {sections.map((key, index) => (
         <section
           key={key}
           data-section={key}
@@ -242,6 +249,13 @@ export function WatchListPage() {
             sectionRefs.current[key] = el
           }}
         >
+          {index > 0 && watchlist[key].length > 0 && (
+            <div className="py-3 flex justify-center">
+              <span className="bg-tvtime-600 text-tvtime-100 text-sm font-bold uppercase tracking-wide px-5 py-2.5 rounded-full">
+                {SECTION_LABELS[key]}
+              </span>
+            </div>
+          )}
           {watchlist[key].map((entry) => (
             <ShowRow key={entry.episode_id} entry={entry} onWatch={handleWatch} onWatched={handleWatched} />
           ))}
