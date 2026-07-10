@@ -7,7 +7,22 @@ security invoker
 stable
 set search_path = 'public'
 as $$
-with next_ep as (
+with progress as (
+  -- The highest (season, episode) the user has actually watched, per show. Episodes at or
+  -- before this point are "behind" the user even if unwatched (e.g. an early season they
+  -- skipped) and must never be resurfaced as the next episode — only what comes after it.
+  -- Shows with nothing watched yet have no row here, so next_ep below falls back to the
+  -- lowest unwatched episode overall, same as before.
+  select distinct on (e.show_id)
+    e.show_id, s.season_number, e.episode_number
+  from tvtime_episodes e
+  join tvtime_seasons s on s.id = e.season_id
+  where e.watched = true
+    and s.season_number != 0
+    and (p_show_id is null or e.show_id = p_show_id)
+  order by e.show_id, s.season_number desc, e.episode_number desc
+),
+next_ep as (
   -- Only episodes that have actually aired are eligible to be a show's "next episode":
   -- a show whose sole remaining episode airs in the future stays off the watchlist
   -- entirely (all three sections) until that air date arrives.
@@ -22,16 +37,20 @@ with next_ep as (
     e.air_date
   from tvtime_episodes e
   join tvtime_seasons s on s.id = e.season_id
+  left join progress pr on pr.show_id = e.show_id
   where e.watched = false
     and s.season_number != 0
     and e.air_date is not null and e.air_date <= current_date
     and (p_show_id is null or e.show_id = p_show_id)
+    and (pr.show_id is null or (s.season_number, e.episode_number) > (pr.season_number, pr.episode_number))
   order by
     e.show_id,
     s.season_number asc,
     e.episode_number asc
 ),
 pending_counts as (
+  -- Deliberately NOT filtered by progress: this counts every unwatched aired episode
+  -- (including ones behind the progress watermark), unlike next_ep above.
   select e.show_id, count(*) as pending
   from tvtime_episodes e
   join tvtime_seasons s on s.id = e.season_id
@@ -79,8 +98,9 @@ rows as (
 -- beyond excluding dropped shows: watching = watched recently OR a followed show's new episode
 -- arrived recently; want_to_see = never watched; not_seen_in_a_while = watched before, nothing
 -- recently, no new episode pending. Mutually exclusive by construction (see below). Shows with
--- everything watched (or whose only remaining episode hasn't aired yet) have no next_ep row and
--- appear in none of the three, regardless of whether
+-- everything watched (or whose only remaining episode hasn't aired yet, or whose only unwatched
+-- episodes are behind the user's progress watermark) have no next_ep row and appear in none of
+-- the three, regardless of whether
 -- user_status has already flipped to 'finished' — filtering on user_status = 'watching' instead
 -- of != 'dropped' would wrongly hide a finished show the moment a new season gets synced in
 -- (tvtime_sync_show doesn't re-flip the status; only tvtime_watch_episode does).

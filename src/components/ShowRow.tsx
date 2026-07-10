@@ -51,7 +51,7 @@ export function ShowRow({ entry, onWatch, onWatched }: ShowRowProps) {
         </Link>
         <p className="text-tvtime-100 font-bold">
           S{entry.season_number} | E{entry.episode_number}
-          {entry.remaining > 0 && ` +${entry.remaining}`}
+          {entry.remaining > 0 && <span className="text-tvtime-400 font-normal"> +{entry.remaining}</span>}
         </p>
         <p className="text-tvtime-100 truncate">{entry.episode_name}</p>
         <div className="flex gap-1.5 mt-0.5">
