@@ -21,6 +21,8 @@ on:
 jobs:
   sync-shows:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout código
@@ -52,3 +54,16 @@ jobs:
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
           DRY_RUN: ${{ env.EFFECTIVE_DRY_RUN }}
+
+      - name: Salvar log em docs/cron
+        if: always()
+        run: |
+          git add docs/cron
+          if git diff --cached --quiet; then
+            echo "Nada para commitar"
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git commit -m "chore: log de sincronização $(date -u +%Y-%m-%d)"
+            git push
+          fi
