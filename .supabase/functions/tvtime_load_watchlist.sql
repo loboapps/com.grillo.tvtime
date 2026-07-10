@@ -8,6 +8,9 @@ stable
 set search_path = 'public'
 as $$
 with next_ep as (
+  -- Only episodes that have actually aired are eligible to be a show's "next episode":
+  -- a show whose sole remaining episode airs in the future stays off the watchlist
+  -- entirely (all three sections) until that air date arrives.
   select distinct on (e.show_id)
     e.id as episode_id,
     e.show_id,
@@ -16,16 +19,15 @@ with next_ep as (
     s.episode_count,
     e.episode_number,
     e.name,
-    e.air_date,
-    (e.air_date is not null and e.air_date <= current_date) as is_aired
+    e.air_date
   from tvtime_episodes e
   join tvtime_seasons s on s.id = e.season_id
   where e.watched = false
     and s.season_number != 0
+    and e.air_date is not null and e.air_date <= current_date
     and (p_show_id is null or e.show_id = p_show_id)
   order by
     e.show_id,
-    (e.air_date is null or e.air_date > current_date) asc,
     s.season_number asc,
     e.episode_number asc
 ),
@@ -49,7 +51,6 @@ rows as (
   select
     sh.id as show_id,
     sh.name,
-    ne.is_aired,
     ne.air_date,
     lw.last_watched_at,
     (lw.last_watched_at is not null) as has_watched_before,
@@ -59,7 +60,7 @@ rows as (
       'name', sh.name, 'poster_path', sh.poster_path,
       'season_number', ne.season_number, 'episode_number', ne.episode_number,
       'episode_name', ne.name,
-      'remaining', coalesce(pc.pending, 0) - (case when ne.is_aired then 1 else 0 end),
+      'remaining', coalesce(pc.pending, 0) - 1,
       'is_first_ep', (ne.episode_number = 1),
       'is_new', (ne.air_date is not null and ne.air_date >= current_date - interval '15 days'),
       'is_last_ep', (ne.episode_number = ne.episode_count)
@@ -78,7 +79,8 @@ rows as (
 -- beyond excluding dropped shows: watching = watched recently OR a followed show's new episode
 -- arrived recently; want_to_see = never watched; not_seen_in_a_while = watched before, nothing
 -- recently, no new episode pending. Mutually exclusive by construction (see below). Shows with
--- everything watched have no next_ep row and appear in none of the three, regardless of whether
+-- everything watched (or whose only remaining episode hasn't aired yet) have no next_ep row and
+-- appear in none of the three, regardless of whether
 -- user_status has already flipped to 'finished' — filtering on user_status = 'watching' instead
 -- of != 'dropped' would wrongly hide a finished show the moment a new season gets synced in
 -- (tvtime_sync_show doesn't re-flip the status; only tvtime_watch_episode does).
@@ -90,20 +92,20 @@ select jsonb_build_object(
       r.entry_json
       order by greatest(
         coalesce(r.last_watched_at, '-infinity'::timestamptz),
-        case when r.has_watched_before and r.is_aired and r.is_new
+        case when r.has_watched_before and r.is_new
              then r.air_date::timestamptz else '-infinity'::timestamptz end
       ) desc
     )
     from rows r
     where (r.last_watched_at >= now() - interval '15 days')
-       or (r.has_watched_before and r.is_aired and r.is_new)
+       or (r.has_watched_before and r.is_new)
   ), '[]'::jsonb),
   'not_seen_in_a_while', coalesce((
     select jsonb_agg(r.entry_json order by r.name asc)
     from rows r
     where r.has_watched_before
       and (r.last_watched_at is null or r.last_watched_at < now() - interval '15 days')
-      and not (r.is_aired and r.is_new)
+      and not r.is_new
   ), '[]'::jsonb),
   'want_to_see', coalesce((
     select jsonb_agg(r.entry_json order by r.name asc)
