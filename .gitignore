@@ -1,6 +1,7 @@
 # Original entries
 /_ref
-/docs
+/docs/*
+!/docs/cron
 /.superpowers
 /.claude/settings.local.json
 /.mcp.json
