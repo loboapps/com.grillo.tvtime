@@ -77,12 +77,12 @@ export function ShowRow({ entry, onWatch, onWatched }: ShowRowProps) {
           onClick={handleMark}
           disabled={status === 'pending'}
           aria-label="Mark as watched"
-          className="w-14 h-14 rounded-full flex items-center justify-center shrink-0 bg-tvtime-100"
+          className="w-11 h-11 rounded-full flex items-center justify-center shrink-0 bg-tvtime-100"
         >
           {status === 'pending' ? (
-            <icons.spinner size={24} className="text-tvtime-900 animate-spin" />
+            <icons.spinner size={19} className="text-tvtime-900 animate-spin" />
           ) : (
-            <icons.check size={26} className="text-tvtime-900" />
+            <icons.check size={21} className="text-tvtime-900" />
           )}
         </button>
       </div>
