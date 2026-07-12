@@ -1,0 +1,504 @@
+{
+  "date": "2026-07-12",
+  "timestamp": "2026-07-12T07:51:51.297Z",
+  "totals": {
+    "tracked": 569,
+    "unchanged": 520,
+    "updated": 49,
+    "failed": 0
+  },
+  "updated": [
+    {
+      "tmdb_id": 186,
+      "name": "Weeds",
+      "old_seasons": 8,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0
+      ],
+      "next_air_date": null
+    },
+    {
+      "tmdb_id": 1100,
+      "name": "How I Met Your Mother",
+      "old_seasons": 9,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0
+      ],
+      "next_air_date": null
+    },
+    {
+      "tmdb_id": 2316,
+      "name": "The Office",
+      "old_seasons": 9,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0
+      ],
+      "next_air_date": null
+    },
+    {
+      "tmdb_id": 243,
+      "name": "Penn & Teller: Bull!",
+      "old_seasons": 8,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0
+      ],
+      "next_air_date": null
+    },
+    {
+      "tmdb_id": 1425,
+      "name": "House of Cards",
+      "old_seasons": 6,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0
+      ],
+      "next_air_date": null
+    },
+    {
+      "tmdb_id": 1433,
+      "name": "American Dad!",
+      "old_seasons": 22,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0
+      ],
+      "next_air_date": null
+    },
+    {
+      "tmdb_id": 1639,
+      "name": "Heroes",
+      "old_seasons": 4,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0
+      ],
+      "next_air_date": null
+    },
+    {
+      "tmdb_id": 1705,
+      "name": "Fringe",
+      "old_seasons": 5,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0
+      ],
+      "next_air_date": null
+    },
+    {
+      "tmdb_id": 2228,
+      "name": "Pinky and the Brain",
+      "old_seasons": 4,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0
+      ],
+      "next_air_date": null
+    },
+    {
+      "tmdb_id": 365,
+      "name": "Jericho",
+      "old_seasons": 2,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0
+      ],
+      "next_air_date": null
+    },
+    {
+      "tmdb_id": 1274,
+      "name": "Six Feet Under",
+      "old_seasons": 5,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0
+      ],
+      "next_air_date": null
+    },
+    {
+      "tmdb_id": 1396,
+      "name": "Breaking Bad",
+      "old_seasons": 5,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0
+      ],
+      "next_air_date": null
+    },
+    {
+      "tmdb_id": 1402,
+      "name": "The Walking Dead",
+      "old_seasons": 11,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0
+      ],
+      "next_air_date": null
+    },
+    {
+      "tmdb_id": 1405,
+      "name": "Dexter",
+      "old_seasons": 8,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0
+      ],
+      "next_air_date": null
+    },
+    {
+      "tmdb_id": 1411,
+      "name": "Person of Interest",
+      "old_seasons": 5,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0
+      ],
+      "next_air_date": null
+    },
+    {
+      "tmdb_id": 1413,
+      "name": "American Horror Story",
+      "old_seasons": 13,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0
+      ],
+      "next_air_date": "2026-09-24"
+    },
+    {
+      "tmdb_id": 1421,
+      "name": "Modern Family",
+      "old_seasons": 11,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0
+      ],
+      "next_air_date": null
+    },
+    {
+      "tmdb_id": 4194,
+      "name": "Star Wars: The Clone Wars",
+      "old_seasons": 7,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0
+      ],
+      "next_air_date": null
+    },
+    {
+      "tmdb_id": 4239,
+      "name": "Married... with Children",
+      "old_seasons": 11,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0
+      ],
+      "next_air_date": null
+    },
+    {
+      "tmdb_id": 4556,
+      "name": "Scrubs",
+      "old_seasons": 9,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0
+      ],
+      "next_air_date": null
+    },
+    {
+      "tmdb_id": 8358,
+      "name": "Lie to Me",
+      "old_seasons": 3,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0
+      ],
+      "next_air_date": null
+    },
+    {
+      "tmdb_id": 4607,
+      "name": "Lost",
+      "old_seasons": 6,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0
+      ],
+      "next_air_date": null
+    },
+    {
+      "tmdb_id": 17967,
+      "name": "Treme",
+      "old_seasons": 4,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0
+      ],
+      "next_air_date": null
+    },
+    {
+      "tmdb_id": 18614,
+      "name": "Hung",
+      "old_seasons": 3,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0
+      ],
+      "next_air_date": null
+    },
+    {
+      "tmdb_id": 849,
+      "name": "Monty Python's Flying Circus",
+      "old_seasons": 4,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0
+      ],
+      "next_air_date": null
+    },
+    {
+      "tmdb_id": 1973,
+      "name": "24",
+      "old_seasons": 9,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0
+      ],
+      "next_air_date": null
+    },
+    {
+      "tmdb_id": 31497,
+      "name": "The League",
+      "old_seasons": 7,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0
+      ],
+      "next_air_date": null
+    },
+    {
+      "tmdb_id": 46639,
+      "name": "American Gods",
+      "old_seasons": 3,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0
+      ],
+      "next_air_date": null
+    },
+    {
+      "tmdb_id": 47640,
+      "name": "The Strain",
+      "old_seasons": 4,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0
+      ],
+      "next_air_date": null
+    },
+    {
+      "tmdb_id": 56296,
+      "name": "Orphan Black",
+      "old_seasons": 5,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0
+      ],
+      "next_air_date": null
+    },
+    {
+      "tmdb_id": 19092,
+      "name": "FlashForward",
+      "old_seasons": 1,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0
+      ],
+      "next_air_date": null
+    },
+    {
+      "tmdb_id": 21421,
+      "name": "The Staircase",
+      "old_seasons": 1,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0
+      ],
+      "next_air_date": null
+    },
+    {
+      "tmdb_id": 46434,
+      "name": "The Vietnam War",
+      "old_seasons": 1,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0
+      ],
+      "next_air_date": null
+    },
+    {
+      "tmdb_id": 44217,
+      "name": "Vikings",
+      "old_seasons": 6,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0
+      ],
+      "next_air_date": null
+    },
+    {
+      "tmdb_id": 60573,
+      "name": "Silicon Valley",
+      "old_seasons": 6,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0
+      ],
+      "next_air_date": null
+    },
+    {
+      "tmdb_id": 60622,
+      "name": "Fargo",
+      "old_seasons": 5,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0
+      ],
+      "next_air_date": null
+    },
+    {
+      "tmdb_id": 60858,
+      "name": "Heroes Reborn",
+      "old_seasons": 1,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0
+      ],
+      "next_air_date": null
+    },
+    {
+      "tmdb_id": 60574,
+      "name": "Peaky Blinders",
+      "old_seasons": 6,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0
+      ],
+      "next_air_date": null
+    },
+    {
+      "tmdb_id": 39510,
+      "name": "Touch",
+      "old_seasons": 2,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0
+      ],
+      "next_air_date": null
+    },
+    {
+      "tmdb_id": 33827,
+      "name": "How the Universe Works",
+      "old_seasons": 11,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0
+      ],
+      "next_air_date": null
+    },
+    {
+      "tmdb_id": 39278,
+      "name": "The Playboy Club",
+      "old_seasons": 1,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0
+      ],
+      "next_air_date": null
+    },
+    {
+      "tmdb_id": 62560,
+      "name": "Mr. Robot",
+      "old_seasons": 4,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0
+      ],
+      "next_air_date": null
+    },
+    {
+      "tmdb_id": 63639,
+      "name": "The Expanse",
+      "old_seasons": 6,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0
+      ],
+      "next_air_date": null
+    },
+    {
+      "tmdb_id": 64230,
+      "name": "Preacher",
+      "old_seasons": 4,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0
+      ],
+      "next_air_date": null
+    },
+    {
+      "tmdb_id": 131927,
+      "name": "Dexter: New Blood",
+      "old_seasons": 1,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0
+      ],
+      "next_air_date": null
+    },
+    {
+      "tmdb_id": 138993,
+      "name": "Hard Knocks: In Season",
+      "old_seasons": 5,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        5
+      ],
+      "next_air_date": null
+    },
+    {
+      "tmdb_id": 158141,
+      "name": "Supacell",
+      "old_seasons": 2,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        2
+      ],
+      "next_air_date": null
+    },
+    {
+      "tmdb_id": 223397,
+      "name": "City of God: The Fight Rages On",
+      "old_seasons": 2,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        2
+      ],
+      "next_air_date": null
+    },
+    {
+      "tmdb_id": 90228,
+      "name": "Dune: Prophecy",
+      "old_seasons": 2,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0,
+        2
+      ],
+      "next_air_date": null
+    }
+  ],
+  "failed": []
+}
