@@ -5,6 +5,7 @@ import { Toast } from '@/components/Toast'
 import { Skeleton } from '@/components/Skeleton'
 import { useToast } from '@/utils/useToast'
 import { tvtimeService, tvtimeWriteService } from '@/services/tvtimeService'
+import { computeNextAirDate } from '@/utils/computeNextAirDate'
 import type { Watchlist, WatchlistEntry } from '@/types/tvtime'
 
 // How long the row's "Watched" confirmation banner stays up before the row
@@ -44,32 +45,33 @@ function replaceShowInWatchlist(watchlist: Watchlist, showId: string, scoped: Wa
 // The daily cron (.github/workflows/app_wrk_sync_shows.yml) has a different
 // job: an unconditional whole-library sweep for seasons TMDB hasn't told us
 // about yet, which is what sets next_air_date in the first place.
-async function syncShows(tmdbIds: number[]): Promise<void> {
+async function syncShows(tvmazeIds: number[]): Promise<void> {
   await Promise.all(
-    tmdbIds.map(async (tmdbId) => {
+    tvmazeIds.map(async (tvmazeId) => {
       try {
-        const details = await tvtimeService.getShowDetails(tmdbId)
-        const episodes = await tvtimeService.fetchAllEpisodes(tmdbId, details.seasons)
+        const details = await tvtimeService.getShowDetails(tvmazeId)
+        const episodes = await tvtimeService.fetchEpisodes(tvmazeId)
         await tvtimeWriteService.syncShow(
-          tmdbId,
+          tvmazeId,
           details.status,
+          details.imdb_id,
           details.number_of_seasons,
           details.number_of_episodes,
           details.seasons,
           episodes,
-          details.next_episode_to_air?.air_date ?? null,
+          computeNextAirDate(episodes),
         )
       } catch (err) {
-        // One show's TMDB sync failing must never block the rest of the list.
-        console.error(`Failed to sync show ${tmdbId}:`, err)
+        // One show's TVmaze sync failing must never block the rest of the list.
+        console.error(`Failed to sync show ${tvmazeId}:`, err)
       }
     }),
   )
 }
 
-function visibleTmdbIds(watchlist: Watchlist): number[] {
+function visibleTvmazeIds(watchlist: Watchlist): number[] {
   const all = [...watchlist.watch_next, ...watchlist.not_seen_in_a_while, ...watchlist.want_to_see]
-  return [...new Set(all.map((e) => e.tmdb_id))]
+  return [...new Set(all.map((e) => e.tvmaze_id))]
 }
 
 function WatchListSkeleton() {
@@ -119,7 +121,7 @@ export function WatchListPage() {
     // show", so this never blocks the page or fires an unbounded burst.
     try {
       const dueIds = await tvtimeService.loadStaleShowIds()
-      const toSync = [...new Set([...visibleTmdbIds(data), ...dueIds])]
+      const toSync = [...new Set([...visibleTvmazeIds(data), ...dueIds])]
       await syncShows(toSync)
       const refreshed = await tvtimeService.loadWatchlist()
       setWatchlist(refreshed)

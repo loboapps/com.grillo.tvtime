@@ -31,7 +31,7 @@ export default function App() {
           }
         />
         <Route
-          path="/show/:tmdbId"
+          path="/show/:tvmazeId"
           element={
             <PrivateRoute>
               <ShowDetailPage />

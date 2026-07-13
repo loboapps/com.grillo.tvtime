@@ -9,7 +9,8 @@ import { Skeleton } from '@/components/Skeleton'
 import { MarkWatchedModal } from '@/components/MarkWatchedModal'
 import { useToast } from '@/utils/useToast'
 import { hasEarlierUnwatchedEpisode } from '@/utils/hasEarlierUnwatchedEpisode'
-import type { ShowDetail, TmdbShowDetails } from '@/types/tvtime'
+import { computeNextAirDate } from '@/utils/computeNextAirDate'
+import type { ShowDetail, TvmazeShowDetails } from '@/types/tvtime'
 
 function ShowDetailSkeleton() {
   return (
@@ -30,12 +31,12 @@ function ShowDetailSkeleton() {
 const LOAD_ERROR_MESSAGE = "Couldn't load this show."
 
 export function ShowDetailPage() {
-  const { tmdbId } = useParams<{ tmdbId: string }>()
+  const { tvmazeId } = useParams<{ tvmazeId: string }>()
   const navigate = useNavigate()
-  const id = Number(tmdbId)
+  const id = Number(tvmazeId)
 
   const [detail, setDetail] = useState<ShowDetail | null>(null)
-  const [tmdbDetails, setTmdbDetails] = useState<TmdbShowDetails | null>(null)
+  const [tvmazeDetails, setTvmazeDetails] = useState<TvmazeShowDetails | null>(null)
   const [stillPathLookup, setStillPathLookup] = useState<Record<string, string | null>>({})
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -71,15 +72,15 @@ export function ShowDetailPage() {
         tvtimeService.loadShow(id),
         tvtimeService.getShowDetails(id),
       ])
-      const episodes = await tvtimeService.fetchAllEpisodes(id, liveDetails.seasons)
+      const episodes = await tvtimeService.fetchEpisodes(id)
       setDetail(showDetail)
-      setTmdbDetails(liveDetails)
+      setTvmazeDetails(liveDetails)
       setStillPathLookup(buildStillPathLookup(episodes))
       setError(null)
 
-      // We already fetch live TMDB details on every visit to a tracked show — piggyback on
+      // We already fetch live TVmaze details on every visit to a tracked show — piggyback on
       // that to catch a season count mismatch (e.g. a revival) and self-heal silently, instead
-      // of waiting for the daily cron or a manual refresh. No extra TMDB calls: everything
+      // of waiting for the daily cron or a manual refresh. No extra TVmaze calls: everything
       // needed (seasons/episodes) is already in hand from the fetches above.
       if (showDetail) {
         const storedSeasonCount = showDetail.seasons.filter((s) => s.season_number !== 0).length
@@ -88,11 +89,12 @@ export function ShowDetailPage() {
             .syncShow(
               id,
               liveDetails.status,
+              liveDetails.imdb_id,
               liveDetails.number_of_seasons,
               liveDetails.number_of_episodes,
               liveDetails.seasons,
               episodes,
-              liveDetails.next_episode_to_air?.air_date ?? null,
+              computeNextAirDate(episodes),
             )
             .then(() => refreshDetail())
             .catch((err) => console.error('Background season-count sync failed:', err))
@@ -166,9 +168,9 @@ export function ShowDetailPage() {
   }
 
   async function handleAdd() {
-    if (!tmdbDetails) return
+    if (!tvmazeDetails) return
     try {
-      await tvtimeWriteService.addShowFromDetails(tmdbDetails)
+      await tvtimeWriteService.addShowFromDetails(tvmazeDetails)
       await refreshDetail()
     } catch (err) {
       console.error(err)
@@ -181,17 +183,18 @@ export function ShowDetailPage() {
     setRefreshing(true)
     try {
       const liveDetails = await tvtimeService.getShowDetails(id)
-      const episodes = await tvtimeService.fetchAllEpisodes(id, liveDetails.seasons)
+      const episodes = await tvtimeService.fetchEpisodes(id)
       await tvtimeWriteService.syncShow(
         id,
         liveDetails.status,
+        liveDetails.imdb_id,
         liveDetails.number_of_seasons,
         liveDetails.number_of_episodes,
         liveDetails.seasons,
         episodes,
-        liveDetails.next_episode_to_air?.air_date ?? null,
+        computeNextAirDate(episodes),
       )
-      setTmdbDetails(liveDetails)
+      setTvmazeDetails(liveDetails)
       setStillPathLookup(buildStillPathLookup(episodes))
       await refreshDetail()
     } catch (err) {
@@ -220,7 +223,7 @@ export function ShowDetailPage() {
     return <ShowDetailSkeleton />
   }
 
-  if (error || !tmdbDetails) {
+  if (error || !tvmazeDetails) {
     return (
       <div className="min-h-screen bg-tvtime-900 flex flex-col items-center justify-center px-6 text-center">
         <p className="text-tvtime-100 font-semibold mb-2">Something went wrong</p>
@@ -235,10 +238,8 @@ export function ShowDetailPage() {
     )
   }
 
-  const backdropUrl = tmdbDetails.backdrop_path
-    ? `https://image.tmdb.org/t/p/w780${tmdbDetails.backdrop_path}`
-    : null
-  const network = tmdbDetails.networks[0]?.name
+  const backdropUrl = tvmazeDetails.backdrop_path
+  const network = tvmazeDetails.networks[0]?.name
   const totalEpisodes = detail?.seasons.reduce((sum, s) => sum + s.episode_count, 0) ?? 0
   const totalWatched = detail?.seasons.reduce((sum, s) => sum + s.watched_count, 0) ?? 0
   const overallProgressPct = totalEpisodes > 0 ? (totalWatched / totalEpisodes) * 100 : 0
@@ -246,7 +247,7 @@ export function ShowDetailPage() {
   return (
     <div className="min-h-screen bg-tvtime-900 pb-20">
       <div className="relative">
-        {backdropUrl && <img src={backdropUrl} alt={tmdbDetails.name} className="w-full h-48 object-cover" />}
+        {backdropUrl && <img src={backdropUrl} alt={tvmazeDetails.name} className="w-full h-48 object-cover" />}
         <button
           onClick={() => navigate(-1)}
           className="absolute top-4 left-4 bg-tvtime-900/70 rounded-full p-1"
@@ -266,9 +267,9 @@ export function ShowDetailPage() {
       </div>
 
       <div className="px-4 py-4">
-        <h1 className="text-tvtime-100 text-xl font-bold">{tmdbDetails.name}</h1>
+        <h1 className="text-tvtime-100 text-xl font-bold">{tvmazeDetails.name}</h1>
         <p className="text-tvtime-300 text-sm mt-1">
-          {tmdbDetails.number_of_seasons} seasons{network ? ` · ${network}` : ''}
+          {tvmazeDetails.number_of_seasons} seasons{network ? ` · ${network}` : ''}
         </p>
 
         {detail && (
@@ -300,7 +301,7 @@ export function ShowDetailPage() {
               onToggleEpisode={handleToggleEpisode}
             />
           ))
-        : tmdbDetails.seasons.map((season) => (
+        : tvmazeDetails.seasons.map((season) => (
             <SeasonAccordion
               key={season.season_number}
               season={{
@@ -313,7 +314,7 @@ export function ShowDetailPage() {
                 episodes: [],
               }}
               stillPathLookup={stillPathLookup}
-              posterPath={tmdbDetails.poster_path}
+              posterPath={tvmazeDetails.poster_path}
               trackable={false}
               onToggleEpisode={() => {}}
             />
