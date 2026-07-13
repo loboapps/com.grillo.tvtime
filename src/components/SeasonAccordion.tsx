@@ -43,7 +43,7 @@ export function SeasonAccordion({ season, stillPathLookup, posterPath, trackable
                 <div className="w-24 h-14 shrink-0 rounded overflow-hidden bg-tvtime-800">
                   {showStill ? (
                     <img
-                      src={`https://image.tmdb.org/t/p/w300${stillPath}`}
+                      src={stillPath}
                       alt={episode.name ?? ''}
                       className="w-full h-full object-cover"
                       onError={() =>
@@ -53,7 +53,7 @@ export function SeasonAccordion({ season, stillPathLookup, posterPath, trackable
                   ) : (
                     posterPath && (
                       <img
-                        src={`https://image.tmdb.org/t/p/w185${posterPath}`}
+                        src={posterPath}
                         alt=""
                         className="w-full h-full object-cover opacity-50"
                       />

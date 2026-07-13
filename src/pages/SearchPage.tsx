@@ -120,7 +120,7 @@ export function SearchPage() {
             <Link to={`/show/${r.id}`} className="flex items-center gap-3 flex-1 min-w-0">
               {r.poster_path && (
                 <img
-                  src={`https://image.tmdb.org/t/p/w185${r.poster_path}`}
+                  src={r.poster_path}
                   alt={r.name}
                   className="w-12 h-16 object-cover rounded"
                 />

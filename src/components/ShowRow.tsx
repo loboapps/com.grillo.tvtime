@@ -36,14 +36,14 @@ export function ShowRow({ entry, onWatch, onWatched }: ShowRowProps) {
     <div className="mx-3 mb-3 rounded-2xl overflow-hidden bg-tvtime-800 flex">
       {entry.poster_path && (
         <img
-          src={`https://image.tmdb.org/t/p/w185${entry.poster_path}`}
+          src={entry.poster_path}
           alt={entry.name}
           className="w-24 self-stretch object-cover shrink-0"
         />
       )}
       <div className="flex-1 min-w-0 p-4 flex flex-col justify-center gap-1.5">
         <Link
-          to={`/show/${entry.tmdb_id}`}
+          to={`/show/${entry.tvmaze_id}`}
           className="inline-flex items-center gap-0.5 self-start rounded-full border border-tvtime-400 px-3 py-1 text-xs font-bold uppercase tracking-wide text-tvtime-100"
         >
           {entry.name}
