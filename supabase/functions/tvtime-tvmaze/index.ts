@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 
 const TVMAZE_BASE = "https://api.tvmaze.com";
+const TVMAZE_TIMEOUT_MS = 10000;
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -21,21 +22,6 @@ interface TvmazeSearchHit {
     weight: number;
     image: { medium: string; original: string } | null;
   };
-}
-
-async function handleSearch(query: string): Promise<Response> {
-  const res = await fetch(`${TVMAZE_BASE}/search/shows?q=${encodeURIComponent(query)}`);
-  const hits = (await res.json()) as TvmazeSearchHit[];
-  const results = hits.map((hit) => ({
-    id: hit.show.id,
-    name: hit.show.name,
-    poster_path: hit.show.image?.original ?? null,
-    weight: hit.show.weight,
-  }));
-  return new Response(JSON.stringify({ results }), {
-    status: res.status,
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
-  });
 }
 
 interface TvmazeShow {
@@ -61,18 +47,60 @@ interface TvmazeImage {
   resolutions: { original: { url: string } };
 }
 
+interface TvmazeEpisode {
+  season: number;
+  number: number;
+  name: string;
+  airdate: string;
+  image: { medium: string; original: string } | null;
+}
+
+// Every TVmaze call goes through this — a hung upstream request must not hang
+// this function's own invocation indefinitely.
+async function tvmazeFetch(url: string): Promise<Response> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), TVMAZE_TIMEOUT_MS);
+  try {
+    return await fetch(url, { signal: controller.signal });
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+function errorResponse(status: number, error: string): Response {
+  return new Response(JSON.stringify({ error }), {
+    status,
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
+}
+
+async function handleSearch(query: string): Promise<Response> {
+  const res = await tvmazeFetch(`${TVMAZE_BASE}/search/shows?q=${encodeURIComponent(query)}`);
+  if (!res.ok) {
+    return errorResponse(502, "tvmaze_search_failed");
+  }
+  const hits = (await res.json()) as TvmazeSearchHit[];
+  const results = hits.map((hit) => ({
+    id: hit.show.id,
+    name: hit.show.name,
+    poster_path: hit.show.image?.original ?? null,
+    weight: hit.show.weight,
+  }));
+  return new Response(JSON.stringify({ results }), {
+    status: 200,
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
+}
+
 async function handleShow(id: number): Promise<Response> {
   const [showRes, seasonsRes, imagesRes] = await Promise.all([
-    fetch(`${TVMAZE_BASE}/shows/${id}`),
-    fetch(`${TVMAZE_BASE}/shows/${id}/seasons`),
-    fetch(`${TVMAZE_BASE}/shows/${id}/images`),
+    tvmazeFetch(`${TVMAZE_BASE}/shows/${id}`),
+    tvmazeFetch(`${TVMAZE_BASE}/shows/${id}/seasons`),
+    tvmazeFetch(`${TVMAZE_BASE}/shows/${id}/images`),
   ]);
 
   if (!showRes.ok) {
-    return new Response(JSON.stringify({ error: "show not found" }), {
-      status: showRes.status,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return errorResponse(showRes.status === 404 ? 404 : 502, "tvmaze_show_failed");
   }
 
   const show = (await showRes.json()) as TvmazeShow;
@@ -109,16 +137,11 @@ async function handleShow(id: number): Promise<Response> {
   });
 }
 
-interface TvmazeEpisode {
-  season: number;
-  number: number;
-  name: string;
-  airdate: string;
-  image: { medium: string; original: string } | null;
-}
-
 async function handleEpisodes(id: number): Promise<Response> {
-  const res = await fetch(`${TVMAZE_BASE}/shows/${id}/episodes`);
+  const res = await tvmazeFetch(`${TVMAZE_BASE}/shows/${id}/episodes`);
+  if (!res.ok) {
+    return errorResponse(res.status === 404 ? 404 : 502, "tvmaze_episodes_failed");
+  }
   const raw = (await res.json()) as TvmazeEpisode[];
   const episodes = raw.map((ep) => ({
     season_number: ep.season,
@@ -128,7 +151,7 @@ async function handleEpisodes(id: number): Promise<Response> {
     still_path: ep.image?.original ?? null,
   }));
   return new Response(JSON.stringify({ episodes }), {
-    status: res.status,
+    status: 200,
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
 }
@@ -151,14 +174,9 @@ serve(async (req) => {
       return await handleEpisodes(body.id!);
     }
 
-    return new Response(JSON.stringify({ error: "unknown action" }), {
-      status: 400,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return errorResponse(400, "unknown_action");
   } catch (err) {
-    return new Response(JSON.stringify({ error: String(err) }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    const isTimeout = err instanceof Error && err.name === "AbortError";
+    return errorResponse(isTimeout ? 504 : 500, isTimeout ? "tvmaze_timeout" : "internal_error");
   }
 });
