@@ -109,6 +109,30 @@ async function handleShow(id: number): Promise<Response> {
   });
 }
 
+interface TvmazeEpisode {
+  season: number;
+  number: number;
+  name: string;
+  airdate: string;
+  image: { medium: string; original: string } | null;
+}
+
+async function handleEpisodes(id: number): Promise<Response> {
+  const res = await fetch(`${TVMAZE_BASE}/shows/${id}/episodes`);
+  const raw = (await res.json()) as TvmazeEpisode[];
+  const episodes = raw.map((ep) => ({
+    season_number: ep.season,
+    episode_number: ep.number,
+    name: ep.name,
+    air_date: ep.airdate || null,
+    still_path: ep.image?.original ?? null,
+  }));
+  return new Response(JSON.stringify({ episodes }), {
+    status: res.status,
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -122,6 +146,9 @@ serve(async (req) => {
     }
     if (body.action === "show") {
       return await handleShow(body.id!);
+    }
+    if (body.action === "episodes") {
+      return await handleEpisodes(body.id!);
     }
 
     return new Response(JSON.stringify({ error: "unknown action" }), {
