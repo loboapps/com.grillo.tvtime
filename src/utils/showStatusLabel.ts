@@ -1,9 +1,7 @@
-const ACTIVE_STATUSES = new Set(['Returning Series', 'Planned', 'In Production', 'Pilot'])
-
-export function isActiveTmdbStatus(tmdbStatus: string): boolean {
-  return ACTIVE_STATUSES.has(tmdbStatus)
+export function isActiveTvmazeStatus(tvmazeStatus: string): boolean {
+  return tvmazeStatus !== 'Ended'
 }
 
-export function formatActiveLabel(tmdbStatus: string): 'Active' | 'Ended' {
-  return isActiveTmdbStatus(tmdbStatus) ? 'Active' : 'Ended'
+export function formatActiveLabel(tvmazeStatus: string): 'Active' | 'Ended' {
+  return isActiveTvmazeStatus(tvmazeStatus) ? 'Active' : 'Ended'
 }
