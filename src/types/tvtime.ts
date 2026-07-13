@@ -8,7 +8,7 @@ export type ShowStatus = 'watching' | 'finished' | 'dropped'
 export interface WatchlistEntry {
   episode_id: string
   show_id: string
-  tmdb_id: number
+  tvmaze_id: number
   name: string
   poster_path: string | null
   season_number: number
@@ -26,34 +26,34 @@ export interface Watchlist {
   want_to_see: WatchlistEntry[]
 }
 
-export interface TmdbSearchResult {
+export interface TvmazeSearchResult {
   id: number
   name: string
   poster_path: string | null
-  popularity: number
+  weight: number
 }
 
-export interface TmdbSeason {
+export interface TvmazeSeason {
   season_number: number
-  name: string
+  name: string | null
   episode_count: number
   air_date: string | null
 }
 
-export interface TmdbShowDetails {
+export interface TvmazeShowDetails {
   id: number
   name: string
   poster_path: string | null
   backdrop_path: string | null
   status: string
+  imdb_id: string | null
   number_of_seasons: number
   number_of_episodes: number
-  seasons: TmdbSeason[]
+  seasons: TvmazeSeason[]
   networks: { name: string }[]
-  next_episode_to_air: { air_date: string | null } | null
 }
 
-export interface TmdbEpisode {
+export interface TvmazeEpisode {
   episode_number: number
   name: string
   air_date: string | null
@@ -61,21 +61,22 @@ export interface TmdbEpisode {
 }
 
 export interface AddShowInput {
-  tmdbId: number
+  tvmazeId: number
   name: string
   posterPath: string | null
   backdropPath: string | null
-  tmdbStatus: string
+  tvmazeStatus: string
+  imdbId: string | null
   numberOfSeasons: number
   numberOfEpisodes: number
   userStatus: ShowStatus
-  seasons: TmdbSeason[]
-  episodes: (TmdbEpisode & { season_number: number })[]
+  seasons: TvmazeSeason[]
+  episodes: (TvmazeEpisode & { season_number: number })[]
   nextAirDate: string | null
 }
 
-export interface SearchResultWithDetails extends TmdbSearchResult {
-  details: TmdbShowDetails
+export interface SearchResultWithDetails extends TvmazeSearchResult {
+  details: TvmazeShowDetails
 }
 
 // --- Auth context -------------------------------------------------------
@@ -123,12 +124,12 @@ export interface ShowSeasonDetail {
 
 export interface ShowDetail {
   show_id: string
-  tmdb_id: number
+  tvmaze_id: number
   name: string
   poster_path: string | null
   backdrop_path: string | null
   user_status: ShowStatus
-  tmdb_status: string
+  tvmaze_status: string
   seasons: ShowSeasonDetail[]
 }
 
