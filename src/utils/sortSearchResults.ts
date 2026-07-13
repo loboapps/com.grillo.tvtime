@@ -1,9 +1,9 @@
-import type { TmdbSearchResult } from '@/types/tvtime'
+import type { TvmazeSearchResult } from '@/types/tvtime'
 
 export function sortSearchResultsByRelevance(
-  results: TmdbSearchResult[],
+  results: TvmazeSearchResult[],
   query: string,
-): TmdbSearchResult[] {
+): TvmazeSearchResult[] {
   const q = query.trim().toLowerCase()
 
   return [...results].sort((a, b) => {
@@ -15,6 +15,6 @@ export function sortSearchResultsByRelevance(
     const bStarts = b.name.toLowerCase().startsWith(q)
     if (aStarts !== bStarts) return aStarts ? -1 : 1
 
-    return b.popularity - a.popularity
+    return b.weight - a.weight
   })
 }
