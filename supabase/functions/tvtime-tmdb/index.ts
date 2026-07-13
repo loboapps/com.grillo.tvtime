@@ -9,12 +9,10 @@ const corsHeaders = {
 };
 
 interface RequestBody {
-  action: "search" | "show" | "season" | "find_by_tvdb" | "search_person" | "person_credits" | "credit_detail";
+  action: "search" | "show" | "season";
   query?: string;
   id?: number;
   season?: number;
-  tvdbId?: number;
-  creditId?: string;
 }
 
 serve(async (req) => {
@@ -32,14 +30,6 @@ serve(async (req) => {
       tmdbUrl = `${TMDB_BASE}/tv/${body.id}?api_key=${TMDB_API_KEY}`;
     } else if (body.action === "season") {
       tmdbUrl = `${TMDB_BASE}/tv/${body.id}/season/${body.season}?api_key=${TMDB_API_KEY}`;
-    } else if (body.action === "find_by_tvdb") {
-      tmdbUrl = `${TMDB_BASE}/find/${body.tvdbId}?external_source=tvdb_id&api_key=${TMDB_API_KEY}`;
-    } else if (body.action === "search_person") {
-      tmdbUrl = `${TMDB_BASE}/search/person?query=${encodeURIComponent(body.query ?? "")}&api_key=${TMDB_API_KEY}`;
-    } else if (body.action === "person_credits") {
-      tmdbUrl = `${TMDB_BASE}/person/${body.id}/tv_credits?api_key=${TMDB_API_KEY}`;
-    } else if (body.action === "credit_detail") {
-      tmdbUrl = `${TMDB_BASE}/credit/${body.creditId}?api_key=${TMDB_API_KEY}`;
     } else {
       return new Response(JSON.stringify({ error: "unknown action" }), {
         status: 400,
