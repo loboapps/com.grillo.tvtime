@@ -1,17 +1,17 @@
 import { supabase } from '@/lib/supabaseClient'
+import { computeNextAirDate } from '@/utils/computeNextAirDate'
 import type {
   AddShowInput,
   ShowDetail,
   ShowStatus,
-  TmdbSearchResult,
-  TmdbShowDetails,
-  TmdbSeason,
-  TmdbEpisode,
+  TvmazeSearchResult,
+  TvmazeShowDetails,
+  TvmazeEpisode,
   Watchlist,
 } from '@/types/tvtime'
 
-async function invokeTmdb<T>(body: Record<string, unknown>): Promise<T> {
-  const { data, error } = await supabase.functions.invoke('tvtime-tmdb', { body })
+async function invokeTvmaze<T>(body: Record<string, unknown>): Promise<T> {
+  const { data, error } = await supabase.functions.invoke('tvtime-tvmaze', { body })
   if (error) throw error
   return data as T
 }
@@ -26,8 +26,8 @@ export const tvtimeService = {
     return data as Watchlist
   },
 
-  async loadShow(tmdbId: number): Promise<ShowDetail | null> {
-    const { data, error } = await supabase.rpc('tvtime_load_show', { p_tmdb_id: tmdbId })
+  async loadShow(tvmazeId: number): Promise<ShowDetail | null> {
+    const { data, error } = await supabase.rpc('tvtime_load_show', { p_tvmaze_id: tvmazeId })
     if (error) throw error
     return data as ShowDetail | null
   },
@@ -46,48 +46,37 @@ export const tvtimeService = {
     return data as number[]
   },
 
-  async searchShows(query: string): Promise<TmdbSearchResult[]> {
-    const data = await invokeTmdb<{ results: TmdbSearchResult[] }>({ action: 'search', query })
+  async searchShows(query: string): Promise<TvmazeSearchResult[]> {
+    const data = await invokeTvmaze<{ results: TvmazeSearchResult[] }>({ action: 'search', query })
     return data.results
   },
 
-  async getShowDetails(tmdbId: number): Promise<TmdbShowDetails> {
-    return invokeTmdb<TmdbShowDetails>({ action: 'show', id: tmdbId })
+  async getShowDetails(tvmazeId: number): Promise<TvmazeShowDetails> {
+    return invokeTvmaze<TvmazeShowDetails>({ action: 'show', id: tvmazeId })
   },
 
-  async getSeasonEpisodes(tmdbId: number, seasonNumber: number): Promise<TmdbEpisode[]> {
-    const data = await invokeTmdb<{ episodes: TmdbEpisode[] }>({
-      action: 'season',
-      id: tmdbId,
-      season: seasonNumber,
+  // Whole show, one call — TVmaze's episodes endpoint isn't paginated, unlike
+  // TMDB's per-season endpoint this replaces. Includes season 0 (specials) —
+  // they're stored like any other episode; any filtering for display purposes
+  // happens in the UI, not at the data layer.
+  async fetchEpisodes(tvmazeId: number): Promise<(TvmazeEpisode & { season_number: number })[]> {
+    const data = await invokeTvmaze<{ episodes: (TvmazeEpisode & { season_number: number })[] }>({
+      action: 'episodes',
+      id: tvmazeId,
     })
     return data.episodes
-  },
-
-  // Includes season 0 (specials) — they're stored like any other episode; any
-  // filtering for display purposes happens in the UI, not at the data layer.
-  async fetchAllEpisodes(
-    tmdbId: number,
-    seasons: TmdbSeason[],
-  ): Promise<(TmdbEpisode & { season_number: number })[]> {
-    const episodesBySeason = await Promise.all(
-      seasons.map(async (season) => {
-        const episodes = await tvtimeService.getSeasonEpisodes(tmdbId, season.season_number)
-        return episodes.map((ep) => ({ ...ep, season_number: season.season_number }))
-      }),
-    )
-    return episodesBySeason.flat()
   },
 }
 
 export const tvtimeWriteService = {
   async addShow(input: AddShowInput): Promise<void> {
     const { error } = await supabase.rpc('tvtime_add_show', {
-      p_tmdb_id: input.tmdbId,
+      p_tvmaze_id: input.tvmazeId,
       p_name: input.name,
       p_poster_path: input.posterPath,
       p_backdrop_path: input.backdropPath,
-      p_tmdb_status: input.tmdbStatus,
+      p_tvmaze_status: input.tvmazeStatus,
+      p_imdb_id: input.imdbId,
       p_number_of_seasons: input.numberOfSeasons,
       p_number_of_episodes: input.numberOfEpisodes,
       p_user_status: input.userStatus,
@@ -98,20 +87,21 @@ export const tvtimeWriteService = {
     if (error) throw error
   },
 
-  async addShowFromDetails(details: TmdbShowDetails): Promise<void> {
-    const episodes = await tvtimeService.fetchAllEpisodes(details.id, details.seasons)
+  async addShowFromDetails(details: TvmazeShowDetails): Promise<void> {
+    const episodes = await tvtimeService.fetchEpisodes(details.id)
     await tvtimeWriteService.addShow({
-      tmdbId: details.id,
+      tvmazeId: details.id,
       name: details.name,
       posterPath: details.poster_path,
       backdropPath: details.backdrop_path,
-      tmdbStatus: details.status,
+      tvmazeStatus: details.status,
+      imdbId: details.imdb_id,
       numberOfSeasons: details.number_of_seasons,
       numberOfEpisodes: details.number_of_episodes,
       userStatus: 'watching',
       seasons: details.seasons,
       episodes,
-      nextAirDate: details.next_episode_to_air?.air_date ?? null,
+      nextAirDate: computeNextAirDate(episodes),
     })
   },
 
@@ -133,17 +123,19 @@ export const tvtimeWriteService = {
   },
 
   async syncShow(
-    tmdbId: number,
-    tmdbStatus: string,
+    tvmazeId: number,
+    tvmazeStatus: string,
+    imdbId: string | null,
     numberOfSeasons: number,
     numberOfEpisodes: number,
-    seasons: TmdbSeason[],
-    episodes: (TmdbEpisode & { season_number: number })[],
+    seasons: TvmazeShowDetails['seasons'],
+    episodes: (TvmazeEpisode & { season_number: number })[],
     nextAirDate: string | null,
   ): Promise<void> {
     const { error } = await supabase.rpc('tvtime_sync_show', {
-      p_tmdb_id: tmdbId,
-      p_tmdb_status: tmdbStatus,
+      p_tvmaze_id: tvmazeId,
+      p_tvmaze_status: tvmazeStatus,
+      p_imdb_id: imdbId,
       p_number_of_seasons: numberOfSeasons,
       p_number_of_episodes: numberOfEpisodes,
       p_seasons: seasons,
