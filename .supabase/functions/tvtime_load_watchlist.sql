@@ -75,7 +75,7 @@ rows as (
     (lw.last_watched_at is not null) as has_watched_before,
     (ne.air_date is not null and ne.air_date >= current_date - interval '15 days') as is_new,
     jsonb_build_object(
-      'episode_id', ne.episode_id, 'show_id', sh.id, 'tmdb_id', sh.tmdb_id,
+      'episode_id', ne.episode_id, 'show_id', sh.id, 'tvmaze_id', sh.tvmaze_id,
       'name', sh.name, 'poster_path', sh.poster_path,
       'season_number', ne.season_number, 'episode_number', ne.episode_number,
       'episode_name', ne.name,
