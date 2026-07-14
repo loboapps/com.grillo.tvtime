@@ -1,0 +1,209 @@
+{
+  "date": "2026-07-14",
+  "timestamp": "2026-07-14T07:29:24.051Z",
+  "totals": {
+    "tracked": 570,
+    "unchanged": 521,
+    "updated": 0,
+    "failed": 49
+  },
+  "updated": [],
+  "failed": [
+    {
+      "tmdb_id": 1973,
+      "error": "Could not find the function public.tvtime_sync_show(p_episodes, p_next_air_date, p_number_of_episodes, p_number_of_seasons, p_seasons, p_tmdb_id, p_tmdb_status) in the schema cache"
+    },
+    {
+      "tmdb_id": 1100,
+      "error": "Could not find the function public.tvtime_sync_show(p_episodes, p_next_air_date, p_number_of_episodes, p_number_of_seasons, p_seasons, p_tmdb_id, p_tmdb_status) in the schema cache"
+    },
+    {
+      "tmdb_id": 2316,
+      "error": "Could not find the function public.tvtime_sync_show(p_episodes, p_next_air_date, p_number_of_episodes, p_number_of_seasons, p_seasons, p_tmdb_id, p_tmdb_status) in the schema cache"
+    },
+    {
+      "tmdb_id": 243,
+      "error": "Could not find the function public.tvtime_sync_show(p_episodes, p_next_air_date, p_number_of_episodes, p_number_of_seasons, p_seasons, p_tmdb_id, p_tmdb_status) in the schema cache"
+    },
+    {
+      "tmdb_id": 186,
+      "error": "Could not find the function public.tvtime_sync_show(p_episodes, p_next_air_date, p_number_of_episodes, p_number_of_seasons, p_seasons, p_tmdb_id, p_tmdb_status) in the schema cache"
+    },
+    {
+      "tmdb_id": 1425,
+      "error": "Could not find the function public.tvtime_sync_show(p_episodes, p_next_air_date, p_number_of_episodes, p_number_of_seasons, p_seasons, p_tmdb_id, p_tmdb_status) in the schema cache"
+    },
+    {
+      "tmdb_id": 1433,
+      "error": "Could not find the function public.tvtime_sync_show(p_episodes, p_next_air_date, p_number_of_episodes, p_number_of_seasons, p_seasons, p_tmdb_id, p_tmdb_status) in the schema cache"
+    },
+    {
+      "tmdb_id": 1639,
+      "error": "Could not find the function public.tvtime_sync_show(p_episodes, p_next_air_date, p_number_of_episodes, p_number_of_seasons, p_seasons, p_tmdb_id, p_tmdb_status) in the schema cache"
+    },
+    {
+      "tmdb_id": 1705,
+      "error": "Could not find the function public.tvtime_sync_show(p_episodes, p_next_air_date, p_number_of_episodes, p_number_of_seasons, p_seasons, p_tmdb_id, p_tmdb_status) in the schema cache"
+    },
+    {
+      "tmdb_id": 2228,
+      "error": "Could not find the function public.tvtime_sync_show(p_episodes, p_next_air_date, p_number_of_episodes, p_number_of_seasons, p_seasons, p_tmdb_id, p_tmdb_status) in the schema cache"
+    },
+    {
+      "tmdb_id": 365,
+      "error": "Could not find the function public.tvtime_sync_show(p_episodes, p_next_air_date, p_number_of_episodes, p_number_of_seasons, p_seasons, p_tmdb_id, p_tmdb_status) in the schema cache"
+    },
+    {
+      "tmdb_id": 1274,
+      "error": "Could not find the function public.tvtime_sync_show(p_episodes, p_next_air_date, p_number_of_episodes, p_number_of_seasons, p_seasons, p_tmdb_id, p_tmdb_status) in the schema cache"
+    },
+    {
+      "tmdb_id": 1396,
+      "error": "Could not find the function public.tvtime_sync_show(p_episodes, p_next_air_date, p_number_of_episodes, p_number_of_seasons, p_seasons, p_tmdb_id, p_tmdb_status) in the schema cache"
+    },
+    {
+      "tmdb_id": 1402,
+      "error": "Could not find the function public.tvtime_sync_show(p_episodes, p_next_air_date, p_number_of_episodes, p_number_of_seasons, p_seasons, p_tmdb_id, p_tmdb_status) in the schema cache"
+    },
+    {
+      "tmdb_id": 1405,
+      "error": "Could not find the function public.tvtime_sync_show(p_episodes, p_next_air_date, p_number_of_episodes, p_number_of_seasons, p_seasons, p_tmdb_id, p_tmdb_status) in the schema cache"
+    },
+    {
+      "tmdb_id": 1411,
+      "error": "Could not find the function public.tvtime_sync_show(p_episodes, p_next_air_date, p_number_of_episodes, p_number_of_seasons, p_seasons, p_tmdb_id, p_tmdb_status) in the schema cache"
+    },
+    {
+      "tmdb_id": 1413,
+      "error": "Could not find the function public.tvtime_sync_show(p_episodes, p_next_air_date, p_number_of_episodes, p_number_of_seasons, p_seasons, p_tmdb_id, p_tmdb_status) in the schema cache"
+    },
+    {
+      "tmdb_id": 1421,
+      "error": "Could not find the function public.tvtime_sync_show(p_episodes, p_next_air_date, p_number_of_episodes, p_number_of_seasons, p_seasons, p_tmdb_id, p_tmdb_status) in the schema cache"
+    },
+    {
+      "tmdb_id": 4194,
+      "error": "Could not find the function public.tvtime_sync_show(p_episodes, p_next_air_date, p_number_of_episodes, p_number_of_seasons, p_seasons, p_tmdb_id, p_tmdb_status) in the schema cache"
+    },
+    {
+      "tmdb_id": 4239,
+      "error": "Could not find the function public.tvtime_sync_show(p_episodes, p_next_air_date, p_number_of_episodes, p_number_of_seasons, p_seasons, p_tmdb_id, p_tmdb_status) in the schema cache"
+    },
+    {
+      "tmdb_id": 4556,
+      "error": "Could not find the function public.tvtime_sync_show(p_episodes, p_next_air_date, p_number_of_episodes, p_number_of_seasons, p_seasons, p_tmdb_id, p_tmdb_status) in the schema cache"
+    },
+    {
+      "tmdb_id": 8358,
+      "error": "Could not find the function public.tvtime_sync_show(p_episodes, p_next_air_date, p_number_of_episodes, p_number_of_seasons, p_seasons, p_tmdb_id, p_tmdb_status) in the schema cache"
+    },
+    {
+      "tmdb_id": 4607,
+      "error": "Could not find the function public.tvtime_sync_show(p_episodes, p_next_air_date, p_number_of_episodes, p_number_of_seasons, p_seasons, p_tmdb_id, p_tmdb_status) in the schema cache"
+    },
+    {
+      "tmdb_id": 17967,
+      "error": "Could not find the function public.tvtime_sync_show(p_episodes, p_next_air_date, p_number_of_episodes, p_number_of_seasons, p_seasons, p_tmdb_id, p_tmdb_status) in the schema cache"
+    },
+    {
+      "tmdb_id": 18614,
+      "error": "Could not find the function public.tvtime_sync_show(p_episodes, p_next_air_date, p_number_of_episodes, p_number_of_seasons, p_seasons, p_tmdb_id, p_tmdb_status) in the schema cache"
+    },
+    {
+      "tmdb_id": 31497,
+      "error": "Could not find the function public.tvtime_sync_show(p_episodes, p_next_air_date, p_number_of_episodes, p_number_of_seasons, p_seasons, p_tmdb_id, p_tmdb_status) in the schema cache"
+    },
+    {
+      "tmdb_id": 46639,
+      "error": "Could not find the function public.tvtime_sync_show(p_episodes, p_next_air_date, p_number_of_episodes, p_number_of_seasons, p_seasons, p_tmdb_id, p_tmdb_status) in the schema cache"
+    },
+    {
+      "tmdb_id": 47640,
+      "error": "Could not find the function public.tvtime_sync_show(p_episodes, p_next_air_date, p_number_of_episodes, p_number_of_seasons, p_seasons, p_tmdb_id, p_tmdb_status) in the schema cache"
+    },
+    {
+      "tmdb_id": 56296,
+      "error": "Could not find the function public.tvtime_sync_show(p_episodes, p_next_air_date, p_number_of_episodes, p_number_of_seasons, p_seasons, p_tmdb_id, p_tmdb_status) in the schema cache"
+    },
+    {
+      "tmdb_id": 19092,
+      "error": "Could not find the function public.tvtime_sync_show(p_episodes, p_next_air_date, p_number_of_episodes, p_number_of_seasons, p_seasons, p_tmdb_id, p_tmdb_status) in the schema cache"
+    },
+    {
+      "tmdb_id": 21421,
+      "error": "Could not find the function public.tvtime_sync_show(p_episodes, p_next_air_date, p_number_of_episodes, p_number_of_seasons, p_seasons, p_tmdb_id, p_tmdb_status) in the schema cache"
+    },
+    {
+      "tmdb_id": 849,
+      "error": "Could not find the function public.tvtime_sync_show(p_episodes, p_next_air_date, p_number_of_episodes, p_number_of_seasons, p_seasons, p_tmdb_id, p_tmdb_status) in the schema cache"
+    },
+    {
+      "tmdb_id": 60622,
+      "error": "Could not find the function public.tvtime_sync_show(p_episodes, p_next_air_date, p_number_of_episodes, p_number_of_seasons, p_seasons, p_tmdb_id, p_tmdb_status) in the schema cache"
+    },
+    {
+      "tmdb_id": 60858,
+      "error": "Could not find the function public.tvtime_sync_show(p_episodes, p_next_air_date, p_number_of_episodes, p_number_of_seasons, p_seasons, p_tmdb_id, p_tmdb_status) in the schema cache"
+    },
+    {
+      "tmdb_id": 60574,
+      "error": "Could not find the function public.tvtime_sync_show(p_episodes, p_next_air_date, p_number_of_episodes, p_number_of_seasons, p_seasons, p_tmdb_id, p_tmdb_status) in the schema cache"
+    },
+    {
+      "tmdb_id": 39510,
+      "error": "Could not find the function public.tvtime_sync_show(p_episodes, p_next_air_date, p_number_of_episodes, p_number_of_seasons, p_seasons, p_tmdb_id, p_tmdb_status) in the schema cache"
+    },
+    {
+      "tmdb_id": 46434,
+      "error": "Could not find the function public.tvtime_sync_show(p_episodes, p_next_air_date, p_number_of_episodes, p_number_of_seasons, p_seasons, p_tmdb_id, p_tmdb_status) in the schema cache"
+    },
+    {
+      "tmdb_id": 44217,
+      "error": "Could not find the function public.tvtime_sync_show(p_episodes, p_next_air_date, p_number_of_episodes, p_number_of_seasons, p_seasons, p_tmdb_id, p_tmdb_status) in the schema cache"
+    },
+    {
+      "tmdb_id": 60573,
+      "error": "Could not find the function public.tvtime_sync_show(p_episodes, p_next_air_date, p_number_of_episodes, p_number_of_seasons, p_seasons, p_tmdb_id, p_tmdb_status) in the schema cache"
+    },
+    {
+      "tmdb_id": 33827,
+      "error": "Could not find the function public.tvtime_sync_show(p_episodes, p_next_air_date, p_number_of_episodes, p_number_of_seasons, p_seasons, p_tmdb_id, p_tmdb_status) in the schema cache"
+    },
+    {
+      "tmdb_id": 39278,
+      "error": "Could not find the function public.tvtime_sync_show(p_episodes, p_next_air_date, p_number_of_episodes, p_number_of_seasons, p_seasons, p_tmdb_id, p_tmdb_status) in the schema cache"
+    },
+    {
+      "tmdb_id": 62560,
+      "error": "Could not find the function public.tvtime_sync_show(p_episodes, p_next_air_date, p_number_of_episodes, p_number_of_seasons, p_seasons, p_tmdb_id, p_tmdb_status) in the schema cache"
+    },
+    {
+      "tmdb_id": 63639,
+      "error": "Could not find the function public.tvtime_sync_show(p_episodes, p_next_air_date, p_number_of_episodes, p_number_of_seasons, p_seasons, p_tmdb_id, p_tmdb_status) in the schema cache"
+    },
+    {
+      "tmdb_id": 64230,
+      "error": "Could not find the function public.tvtime_sync_show(p_episodes, p_next_air_date, p_number_of_episodes, p_number_of_seasons, p_seasons, p_tmdb_id, p_tmdb_status) in the schema cache"
+    },
+    {
+      "tmdb_id": 131927,
+      "error": "Could not find the function public.tvtime_sync_show(p_episodes, p_next_air_date, p_number_of_episodes, p_number_of_seasons, p_seasons, p_tmdb_id, p_tmdb_status) in the schema cache"
+    },
+    {
+      "tmdb_id": 138993,
+      "error": "Could not find the function public.tvtime_sync_show(p_episodes, p_next_air_date, p_number_of_episodes, p_number_of_seasons, p_seasons, p_tmdb_id, p_tmdb_status) in the schema cache"
+    },
+    {
+      "tmdb_id": 158141,
+      "error": "Could not find the function public.tvtime_sync_show(p_episodes, p_next_air_date, p_number_of_episodes, p_number_of_seasons, p_seasons, p_tmdb_id, p_tmdb_status) in the schema cache"
+    },
+    {
+      "tmdb_id": 90228,
+      "error": "Could not find the function public.tvtime_sync_show(p_episodes, p_next_air_date, p_number_of_episodes, p_number_of_seasons, p_seasons, p_tmdb_id, p_tmdb_status) in the schema cache"
+    },
+    {
+      "tmdb_id": 223397,
+      "error": "Could not find the function public.tvtime_sync_show(p_episodes, p_next_air_date, p_number_of_episodes, p_number_of_seasons, p_seasons, p_tmdb_id, p_tmdb_status) in the schema cache"
+    }
+  ]
+}
