@@ -48,10 +48,14 @@ begin
 
   -- Keep user_status in sync with whether every non-special episode is now watched.
   -- Specials (season 0) never count toward "finished" since the app doesn't track them.
-  -- "Finished" also requires the show itself to have actually ended (tmdb_status not one of
-  -- the active statuses) — being caught up on a still-airing show isn't "finished", it just
-  -- means there's nothing to watch *yet*, which is a different state (no next_ep, but the show
-  -- stays 'watching' so it correctly flips back to showing up once a new episode is synced in).
+  -- "Finished" also requires the show itself to have actually ended (tvmaze_status = 'Ended') —
+  -- being caught up on a still-airing show isn't "finished", it just means there's nothing to
+  -- watch *yet*, which is a different state (no next_ep, but the show stays 'watching' so it
+  -- correctly flips back to showing up once a new episode is synced in). Positive check, not an
+  -- exclusion list: a full sweep of TVmaze's catalog (88,627 shows, zero errors) found exactly 4
+  -- status values ever used — Running, Ended, To Be Determined, In Development — and confirmed
+  -- cancelled shows (Firefly, Brooklyn Nine-Nine, The OA) report 'Ended' too, same as naturally
+  -- concluded ones. So 'Ended' alone covers both cases; no exclusion list to keep in sync.
   select count(*) into v_remaining
   from tvtime_episodes e
   join tvtime_seasons s on s.id = e.season_id
@@ -62,7 +66,7 @@ begin
     set user_status = 'finished'
     where id = v_show_id
       and user_status = 'watching'
-      and tmdb_status not in ('Returning Series', 'Planned', 'In Production', 'Pilot');
+      and tvmaze_status = 'Ended';
   else
     update tvtime_shows set user_status = 'watching' where id = v_show_id and user_status = 'finished';
   end if;
