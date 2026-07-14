@@ -56,7 +56,7 @@ async function applyMerge({ show_ids, target_show_id, target_tvmaze_id, target_s
 
     const { data: seasons, error: seasonsErr } = await supabase
       .from('tvtime_seasons')
-      .select('id, season_number')
+      .select('id, season_number, name, episode_count, air_date')
       .eq('show_id', sourceId)
     if (seasonsErr) throw seasonsErr
 
@@ -65,11 +65,19 @@ async function applyMerge({ show_ids, target_show_id, target_tvmaze_id, target_s
 
       // Move episodes to the target show's season (creating it if it doesn't exist yet),
       // preserving watched/watched_at. Conflicts (episode already exists in the target
-      // season) keep whichever copy is already watched=true.
+      // season) keep whichever copy is already watched=true. episode_count/name/air_date
+      // carry over from the source season so a newly created target season isn't left with
+      // nulls (those drive the season progress bar in the UI).
       const { data: targetSeason, error: targetSeasonErr } = await supabase
         .from('tvtime_seasons')
         .upsert(
-          { show_id: target_show_id, season_number: newSeasonNumber },
+          {
+            show_id: target_show_id,
+            season_number: newSeasonNumber,
+            name: season.name,
+            episode_count: season.episode_count,
+            air_date: season.air_date,
+          },
           { onConflict: 'show_id,season_number', ignoreDuplicates: false },
         )
         .select('id')
@@ -116,7 +124,11 @@ async function applyMerge({ show_ids, target_show_id, target_tvmaze_id, target_s
     console.log(`  merged show ${sourceId} into ${target_show_id}, deleted the duplicate row`)
   }
 
-  await supabase.from('tvtime_shows').update({ tvmaze_id: target_tvmaze_id }).eq('id', target_show_id)
+  const { error: targetTvmazeIdErr } = await supabase
+    .from('tvtime_shows')
+    .update({ tvmaze_id: target_tvmaze_id })
+    .eq('id', target_show_id)
+  if (targetTvmazeIdErr) throw targetTvmazeIdErr
 }
 
 async function main() {
