@@ -1,4 +1,4 @@
-create or replace function tvtime_load_show(p_tmdb_id integer)
+create or replace function tvtime_load_show(p_tvmaze_id integer)
 returns jsonb
 language sql
 security invoker
@@ -7,12 +7,12 @@ set search_path = 'public'
 as $$
   select jsonb_build_object(
     'show_id', s.id,
-    'tmdb_id', s.tmdb_id,
+    'tvmaze_id', s.tvmaze_id,
     'name', s.name,
     'poster_path', s.poster_path,
     'backdrop_path', s.backdrop_path,
     'user_status', s.user_status,
-    'tmdb_status', s.tmdb_status,
+    'tvmaze_status', s.tvmaze_status,
     'seasons', coalesce((
       select jsonb_agg(
         jsonb_build_object(
@@ -47,7 +47,7 @@ as $$
     ), '[]'::jsonb)
   )
   from tvtime_shows s
-  where s.tmdb_id = p_tmdb_id;
+  where s.tvmaze_id = p_tvmaze_id;
 $$;
 
 grant execute on function tvtime_load_show(integer) to authenticated;
