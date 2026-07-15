@@ -4,6 +4,7 @@ create table tvtime_shows (
   tvmaze_id          integer unique,
   imdb_id            text,
   name               text not null,
+  original_name      text,
   poster_path        text,
   backdrop_path      text,
   tmdb_status        text,
