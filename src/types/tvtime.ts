@@ -113,6 +113,7 @@ export interface ShowEpisodeDetail {
   name: string | null
   air_date: string | null
   watched: boolean
+  watched_at: string | null
 }
 
 export interface ShowSeasonDetail {

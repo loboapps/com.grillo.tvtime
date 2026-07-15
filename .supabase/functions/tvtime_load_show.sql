@@ -32,7 +32,8 @@ as $$
                 'episode_number', ep.episode_number,
                 'name', ep.name,
                 'air_date', ep.air_date,
-                'watched', ep.watched
+                'watched', ep.watched,
+                'watched_at', ep.watched_at
               )
               order by ep.episode_number asc
             )
