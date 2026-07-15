@@ -27,6 +27,7 @@ interface TvmazeSearchHit {
 interface TvmazeShow {
   id: number;
   name: string;
+  language: string;
   status: string;
   image: { medium: string; original: string } | null;
   network: { name: string } | null;
@@ -45,6 +46,11 @@ interface TvmazeImage {
   type: string;
   main: boolean;
   resolutions: { original: { url: string } };
+}
+
+interface TvmazeAka {
+  name: string;
+  country: { code: string } | null;
 }
 
 interface TvmazeEpisode {
@@ -93,10 +99,11 @@ async function handleSearch(query: string): Promise<Response> {
 }
 
 async function handleShow(id: number): Promise<Response> {
-  const [showRes, seasonsRes, imagesRes] = await Promise.all([
+  const [showRes, seasonsRes, imagesRes, akasRes] = await Promise.all([
     tvmazeFetch(`${TVMAZE_BASE}/shows/${id}`),
     tvmazeFetch(`${TVMAZE_BASE}/shows/${id}/seasons`),
     tvmazeFetch(`${TVMAZE_BASE}/shows/${id}/images`),
+    tvmazeFetch(`${TVMAZE_BASE}/shows/${id}/akas`),
   ]);
 
   if (!showRes.ok) {
@@ -106,6 +113,7 @@ async function handleShow(id: number): Promise<Response> {
   const show = (await showRes.json()) as TvmazeShow;
   const seasons = seasonsRes.ok ? ((await seasonsRes.json()) as TvmazeSeason[]) : [];
   const images = imagesRes.ok ? ((await imagesRes.json()) as TvmazeImage[]) : [];
+  const akas = akasRes.ok ? ((await akasRes.json()) as TvmazeAka[]) : [];
 
   const background = images.find((img) => img.type === "background" && img.main) ??
     images.find((img) => img.type === "background") ??
@@ -113,9 +121,18 @@ async function handleShow(id: number): Promise<Response> {
 
   const network = show.network?.name ?? show.webChannel?.name;
 
+  // TVmaze returns show names in the original language/alphabet. The aka entry
+  // with country: null is consistently the international/English title when
+  // one exists (verified live against several non-English shows) — prefer it
+  // for display, but always keep the original name too (original_name below).
+  const internationalAka = akas.find((aka) => aka.country === null);
+  const resolvedName = internationalAka?.name ?? show.name;
+
   const body = {
     id: show.id,
-    name: show.name,
+    name: resolvedName,
+    original_name: show.name,
+    language: show.language,
     poster_path: show.image?.original ?? null,
     backdrop_path: background?.resolutions.original.url ?? null,
     status: show.status,
