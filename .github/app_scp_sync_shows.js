@@ -111,7 +111,7 @@ async function main() {
             .from('tvtime_shows')
             .update({
               tvmaze_status: details.status,
-              number_of_episodes: mapped.length,
+              number_of_episodes: details.number_of_episodes,
               next_air_date: nextAirDate,
               synced_at: new Date().toISOString(),
             })
@@ -139,7 +139,7 @@ async function main() {
           p_imdb_id: details.imdb_id,
           p_original_name: details.original_name,
           p_number_of_seasons: numberOfSeasons,
-          p_number_of_episodes: mapped.length,
+          p_number_of_episodes: details.number_of_episodes,
           p_seasons: seasonMetas,
           p_episodes: episodesToSync,
           p_next_air_date: nextAirDate,
