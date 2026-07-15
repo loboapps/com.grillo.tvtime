@@ -121,11 +121,17 @@ async function handleShow(id: number): Promise<Response> {
 
   const network = show.network?.name ?? show.webChannel?.name;
 
-  // TVmaze returns show names in the original language/alphabet. The aka entry
-  // with country: null is consistently the international/English title when
-  // one exists (verified live against several non-English shows) — prefer it
-  // for display, but always keep the original name too (original_name below).
-  const internationalAka = akas.find((aka) => aka.country === null);
+  // TVmaze returns show names in the original language/alphabet. For a
+  // non-English show, the aka entry with country: null is consistently the
+  // international/English title when one exists (verified live against
+  // several non-English shows) — prefer it for display. For an
+  // already-English show, skip aka lookup entirely: show.name is already
+  // what's wanted, and country: null akas aren't reliably "the umbrella
+  // title" — for an anthology show tracked as one entry across multiple
+  // seasons (e.g. tvmaze_id 8161, "The Terror"), TVmaze's own country: null
+  // aka can be a specific season's subtitle ("The Terror: Infamy") rather
+  // than the series name, which would be actively misleading here.
+  const internationalAka = show.language !== "English" ? akas.find((aka) => aka.country === null) : undefined;
   const resolvedName = internationalAka?.name ?? show.name;
 
   const body = {
