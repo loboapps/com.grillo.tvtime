@@ -194,21 +194,35 @@ async function handleSearch(query: string): Promise<Response> {
 }
 
 async function handleShow(id: number): Promise<Response> {
-  const [showRes, seasonsRes, imagesRes, akasRes] = await Promise.all([
+  // seasons/images/akas are enrichment, not essential — Promise.allSettled so a
+  // timeout on any one of them degrades to [] instead of sinking the whole
+  // request the way Promise.all would (an AbortError on any entry used to reject
+  // the entire group, even when the essential show fetch had already succeeded).
+  const [showResult, seasonsResult, imagesResult, akasResult] = await Promise.allSettled([
     tvmazeFetch(`${TVMAZE_BASE}/shows/${id}`),
     tvmazeFetch(`${TVMAZE_BASE}/shows/${id}/seasons`),
     tvmazeFetch(`${TVMAZE_BASE}/shows/${id}/images`),
     tvmazeFetch(`${TVMAZE_BASE}/shows/${id}/akas`),
   ]);
 
-  if (!showRes.ok) {
-    return errorResponse(showRes.status === 404 ? 404 : 502, "tvmaze_show_failed");
+  if (showResult.status === "rejected" || !showResult.value.ok) {
+    const status = showResult.status === "fulfilled" && showResult.value.status === 404 ? 404 : 502;
+    return errorResponse(status, "tvmaze_show_failed");
   }
 
-  const show = (await showRes.json()) as TvmazeShow;
-  const seasons = seasonsRes.ok ? ((await seasonsRes.json()) as TvmazeSeason[]) : [];
-  const images = imagesRes.ok ? ((await imagesRes.json()) as TvmazeImage[]) : [];
-  const akas = akasRes.ok ? ((await akasRes.json()) as TvmazeAka[]) : [];
+  const show = (await showResult.value.json()) as TvmazeShow;
+  const seasons =
+    seasonsResult.status === "fulfilled" && seasonsResult.value.ok
+      ? ((await seasonsResult.value.json()) as TvmazeSeason[])
+      : [];
+  const images =
+    imagesResult.status === "fulfilled" && imagesResult.value.ok
+      ? ((await imagesResult.value.json()) as TvmazeImage[])
+      : [];
+  const akas =
+    akasResult.status === "fulfilled" && akasResult.value.ok
+      ? ((await akasResult.value.json()) as TvmazeAka[])
+      : [];
 
   const background = images.find((img) => img.type === "background" && img.main) ??
     images.find((img) => img.type === "background") ??
@@ -290,11 +304,13 @@ serve(async (req) => {
     if (body.action === "search") {
       return await handleSearch(body.query ?? "");
     }
-    if (body.action === "show") {
-      return await handleShow(body.id!);
-    }
-    if (body.action === "episodes") {
-      return await handleEpisodes(body.id!, body.language, body.imdb_id);
+    if (body.action === "show" || body.action === "episodes") {
+      if (typeof body.id !== "number") {
+        return errorResponse(400, "missing_id");
+      }
+      return body.action === "show"
+        ? await handleShow(body.id)
+        : await handleEpisodes(body.id, body.language, body.imdb_id);
     }
 
     return errorResponse(400, "unknown_action");

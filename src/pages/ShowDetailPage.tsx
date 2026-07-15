@@ -47,8 +47,8 @@ export function ShowDetailPage() {
   const notFound = Number.isNaN(id)
 
   // Refreshes only our DB-tracked state (seasons/episodes/watched flags), not the
-  // live TMDB fetch or the loading gate — a full load() here would unmount
-  // SeasonAccordion (collapsing every open season) and re-fetch TMDB per season
+  // live TVmaze fetch or the loading gate — a full load() here would unmount
+  // SeasonAccordion (collapsing every open season) and re-fetch TVmaze per season
   // on every single episode toggle.
   const refreshDetail = useCallback(async () => {
     try {

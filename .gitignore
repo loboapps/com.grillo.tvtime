@@ -3,7 +3,6 @@
 /docs/*
 !/docs/cron
 /.superpowers
-/scripts/tvmaze-migration
 /.claude/settings.local.json
 /.mcp.json
 /.env

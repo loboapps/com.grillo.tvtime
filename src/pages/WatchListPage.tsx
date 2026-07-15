@@ -43,7 +43,7 @@ function replaceShowInWatchlist(watchlist: Watchlist, showId: string, scoped: Wa
 // knows is relevant (currently visible in the watchlist, plus anything whose
 // own known next episode air date has arrived), not "every tracked show".
 // The daily cron (.github/workflows/app_wrk_sync_shows.yml) has a different
-// job: an unconditional whole-library sweep for seasons TMDB hasn't told us
+// job: an unconditional whole-library sweep for seasons TVmaze hasn't told us
 // about yet, which is what sets next_air_date in the first place.
 async function syncShows(tvmazeIds: number[]): Promise<void> {
   await Promise.all(
