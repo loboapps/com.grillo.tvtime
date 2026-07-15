@@ -3,6 +3,10 @@ import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 const TVMAZE_BASE = "https://api.tvmaze.com";
 const TVMAZE_TIMEOUT_MS = 10000;
 
+const TMDB_API_KEY = Deno.env.get("TMDB_API_KEY")!;
+const TMDB_BASE = "https://api.themoviedb.org/3";
+const TMDB_TIMEOUT_MS = 10000;
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -12,6 +16,8 @@ interface RequestBody {
   action: "search" | "show" | "episodes";
   query?: string;
   id?: number;
+  language?: string;
+  imdb_id?: string;
 }
 
 interface TvmazeSearchHit {
@@ -61,6 +67,27 @@ interface TvmazeEpisode {
   image: { medium: string; original: string } | null;
 }
 
+interface TmdbFindResult {
+  tv_results: { id: number }[];
+}
+
+interface TmdbSeasonSummary {
+  season_number: number;
+}
+
+interface TmdbShow {
+  seasons: TmdbSeasonSummary[];
+}
+
+interface TmdbEpisode {
+  name: string;
+  air_date: string | null;
+}
+
+interface TmdbSeasonDetail {
+  episodes: TmdbEpisode[];
+}
+
 // Every TVmaze call goes through this — a hung upstream request must not hang
 // this function's own invocation indefinitely.
 async function tvmazeFetch(url: string): Promise<Response> {
@@ -70,6 +97,74 @@ async function tvmazeFetch(url: string): Promise<Response> {
     return await fetch(url, { signal: controller.signal });
   } finally {
     clearTimeout(timeout);
+  }
+}
+
+// Same timeout-guard pattern as tvmazeFetch — a hung TMDB call must not hang
+// this function's own invocation indefinitely.
+async function tmdbFetch(url: string): Promise<Response> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), TMDB_TIMEOUT_MS);
+  try {
+    return await fetch(url, { signal: controller.signal });
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+// Only called when the show's TVmaze language isn't English. Matches TVmaze
+// episodes to TMDB episodes by exact air date — never by season/episode
+// position, since the two providers can number the same show differently
+// (see the Task 24 numbering-reconciliation work in the parent migration).
+// Mutates `episodes` in place, only overwriting names it found a match for.
+// Any failure anywhere in this path (id not found, TMDB down, timeout,
+// malformed response) leaves the original TVmaze names untouched — this
+// never throws and never blocks the caller.
+async function resolveEpisodeNamesViaTmdb(
+  imdbId: string,
+  episodes: TvmazeEpisode[],
+): Promise<void> {
+  try {
+    const findRes = await tmdbFetch(
+      `${TMDB_BASE}/find/${imdbId}?external_source=imdb_id&api_key=${TMDB_API_KEY}`,
+    );
+    if (!findRes.ok) return;
+    const found = (await findRes.json()) as TmdbFindResult;
+    const tmdbId = found.tv_results[0]?.id;
+    if (!tmdbId) return;
+
+    const showRes = await tmdbFetch(`${TMDB_BASE}/tv/${tmdbId}?api_key=${TMDB_API_KEY}`);
+    if (!showRes.ok) return;
+    const show = (await showRes.json()) as TmdbShow;
+
+    const seasonResults = await Promise.all(
+      show.seasons.map((s) =>
+        tmdbFetch(`${TMDB_BASE}/tv/${tmdbId}/season/${s.season_number}?api_key=${TMDB_API_KEY}`),
+      ),
+    );
+    const tmdbEpisodes: TmdbEpisode[] = [];
+    for (const res of seasonResults) {
+      if (!res.ok) continue;
+      const season = (await res.json()) as TmdbSeasonDetail;
+      tmdbEpisodes.push(...(season.episodes ?? []));
+    }
+
+    // The same air date can hold more than one episode (binge-release day) —
+    // pull matches in list order, one TMDB name per TVmaze episode per date.
+    const byAirDate = new Map<string, string[]>();
+    for (const ep of tmdbEpisodes) {
+      if (!ep.air_date) continue;
+      if (!byAirDate.has(ep.air_date)) byAirDate.set(ep.air_date, []);
+      byAirDate.get(ep.air_date)!.push(ep.name);
+    }
+
+    for (const ep of episodes) {
+      const names = byAirDate.get(ep.airdate);
+      const nextName = names?.shift();
+      if (nextName) ep.name = nextName;
+    }
+  } catch {
+    // Network error, timeout, malformed response — leave TVmaze names as-is.
   }
 }
 
@@ -160,12 +255,17 @@ async function handleShow(id: number): Promise<Response> {
   });
 }
 
-async function handleEpisodes(id: number): Promise<Response> {
+async function handleEpisodes(id: number, language?: string, imdbId?: string): Promise<Response> {
   const res = await tvmazeFetch(`${TVMAZE_BASE}/shows/${id}/episodes`);
   if (!res.ok) {
     return errorResponse(res.status === 404 ? 404 : 502, "tvmaze_episodes_failed");
   }
   const raw = (await res.json()) as TvmazeEpisode[];
+
+  if (language && language !== "English" && imdbId) {
+    await resolveEpisodeNamesViaTmdb(imdbId, raw);
+  }
+
   const episodes = raw.map((ep) => ({
     season_number: ep.season,
     episode_number: ep.number,
@@ -194,7 +294,7 @@ serve(async (req) => {
       return await handleShow(body.id!);
     }
     if (body.action === "episodes") {
-      return await handleEpisodes(body.id!);
+      return await handleEpisodes(body.id!, body.language, body.imdb_id);
     }
 
     return errorResponse(400, "unknown_action");
