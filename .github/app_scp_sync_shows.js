@@ -9,18 +9,19 @@ const LOG_RETENTION_DAYS = 7
 
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY)
 
-const TMDB_API_KEY = process.env.TMDB_API_KEY
-const TMDB_BASE = 'https://api.themoviedb.org/3'
-
-async function tmdbGet(path) {
-  const res = await fetch(`${TMDB_BASE}${path}${path.includes('?') ? '&' : '?'}api_key=${TMDB_API_KEY}`)
-  if (!res.ok) throw new Error(`TMDB ${path} -> HTTP ${res.status}`)
-  return res.json()
+async function invokeTvmaze(body) {
+  const { data, error } = await supabase.functions.invoke('tvtime-tvmaze', { body })
+  if (error) throw error
+  return data
 }
 
-async function fetchSeason(tmdbId, seasonNumber) {
-  const data = await tmdbGet(`/tv/${tmdbId}/season/${seasonNumber}`)
-  return (data.episodes ?? []).map((ep) => ({ ...ep, season_number: seasonNumber }))
+function computeNextAirDate(episodes) {
+  const today = new Date().toISOString().slice(0, 10)
+  const upcoming = episodes
+    .map((e) => e.air_date)
+    .filter((date) => date && date >= today)
+    .sort()
+  return upcoming[0] ?? null
 }
 
 // Filenames carry the run date because `actions/checkout` resets file mtimes to checkout
@@ -47,7 +48,8 @@ function writeSyncLog(summary) {
 async function main() {
   const { data: shows, error: showsErr } = await supabase
     .from('tvtime_shows')
-    .select('id, tmdb_id, number_of_seasons')
+    .select('id, tvmaze_id, number_of_seasons')
+    .not('tvmaze_id', 'is', null)
   if (showsErr) throw showsErr
 
   // A NULL air_date on an unwatched episode already *is* the "still missing data" signal —
@@ -86,25 +88,30 @@ async function main() {
 
   for (const show of shows) {
     try {
-      const details = await tmdbGet(`/tv/${show.tmdb_id}`)
-      const nextAirDate = details.next_episode_to_air?.air_date ?? null
+      const details = await invokeTvmaze({ action: 'show', id: show.tvmaze_id })
+      const { episodes: mapped } = await invokeTvmaze({
+        action: 'episodes',
+        id: show.tvmaze_id,
+        language: details.language,
+        imdb_id: details.imdb_id,
+      })
+      const nextAirDate = computeNextAirDate(mapped)
+      const numberOfSeasons = details.number_of_seasons
 
       const newSeasonNumbers = []
-      for (let n = (show.number_of_seasons ?? 0) + 1; n <= details.number_of_seasons; n++) {
+      for (let n = (show.number_of_seasons ?? 0) + 1; n <= numberOfSeasons; n++) {
         newSeasonNumbers.push(n)
       }
       const tbaSeasonNumbers = [...(tbaSeasonsByShow.get(show.id) ?? [])]
       const seasonsToFetch = [...new Set([...newSeasonNumbers, ...tbaSeasonNumbers])]
 
       if (seasonsToFetch.length === 0) {
-        // Nothing changed and nothing missing — just keep status/counts/next_air_date/synced_at
-        // current. No season/episode fetch, no tvtime_sync_show round trip.
         if (!DRY_RUN) {
           const { error } = await supabase
             .from('tvtime_shows')
             .update({
-              tmdb_status: details.status,
-              number_of_episodes: details.number_of_episodes,
+              tvmaze_status: details.status,
+              number_of_episodes: mapped.length,
               next_air_date: nextAirDate,
               synced_at: new Date().toISOString(),
             })
@@ -115,37 +122,40 @@ async function main() {
         continue
       }
 
+      // details.seasons is already the edge function's own {season_number, name, episode_count,
+      // air_date} shape (see Task 26's handleShow) — no extra mapping needed here, unlike the
+      // raw TVmaze /seasons response the earlier draft of this task filtered directly.
       const seasonMetas = details.seasons.filter((s) => seasonsToFetch.includes(s.season_number))
-      const episodes = (
-        await Promise.all(seasonsToFetch.map((n) => fetchSeason(show.tmdb_id, n)))
-      ).flat()
+      const episodesToSync = mapped.filter((ep) => seasonsToFetch.includes(ep.season_number))
 
       if (DRY_RUN) {
         console.log(
-          `  [dry-run] would update ${show.tmdb_id} (${details.name}): seasons ${seasonsToFetch.join(', ')}, ${episodes.length} episodes`,
+          `  [dry-run] would update ${show.tvmaze_id} (${details.name}): seasons ${seasonsToFetch.join(', ')}, ${episodesToSync.length} episodes`,
         )
       } else {
         const { error } = await supabase.rpc('tvtime_sync_show', {
-          p_tmdb_id: show.tmdb_id,
-          p_tmdb_status: details.status,
-          p_number_of_seasons: details.number_of_seasons,
-          p_number_of_episodes: details.number_of_episodes,
+          p_tvmaze_id: show.tvmaze_id,
+          p_tvmaze_status: details.status,
+          p_imdb_id: details.imdb_id,
+          p_original_name: details.original_name,
+          p_number_of_seasons: numberOfSeasons,
+          p_number_of_episodes: mapped.length,
           p_seasons: seasonMetas,
-          p_episodes: episodes,
+          p_episodes: episodesToSync,
           p_next_air_date: nextAirDate,
         })
         if (error) throw error
       }
       updated++
       updatedShows.push({
-        tmdb_id: show.tmdb_id,
+        tvmaze_id: show.tvmaze_id,
         name: details.name,
         old_seasons: show.number_of_seasons ?? 0,
         new_seasons:
           newSeasonNumbers.length > 0
             ? {
                 numbers: newSeasonNumbers,
-                episodes_synced: episodes.filter((ep) => newSeasonNumbers.includes(ep.season_number)).length,
+                episodes_synced: episodesToSync.filter((ep) => newSeasonNumbers.includes(ep.season_number)).length,
               }
             : null,
         resolved_tba_seasons: tbaSeasonNumbers,
@@ -153,8 +163,8 @@ async function main() {
       })
     } catch (err) {
       failed++
-      failedShows.push({ tmdb_id: show.tmdb_id, error: err.message })
-      console.error(`  failed on show ${show.tmdb_id}:`, err.message)
+      failedShows.push({ tvmaze_id: show.tvmaze_id, error: err.message })
+      console.error(`  failed on show ${show.tvmaze_id}:`, err.message)
     }
   }
 
