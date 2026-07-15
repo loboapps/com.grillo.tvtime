@@ -56,6 +56,8 @@ async function syncShows(tvmazeIds: number[]): Promise<void> {
           details.status,
           details.imdb_id,
           details.original_name,
+          details.poster_path,
+          details.backdrop_path,
           details.number_of_seasons,
           details.number_of_episodes,
           details.seasons,

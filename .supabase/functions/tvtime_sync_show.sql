@@ -1,12 +1,14 @@
 -- Same signature-identity note as tvtime_add_show: a trailing defaulted param still needs the
 -- old overload dropped first, or it just adds a second function instead of replacing this one.
-drop function if exists tvtime_sync_show(integer, text, text, integer, integer, jsonb, jsonb, date);
+drop function if exists tvtime_sync_show(integer, text, text, text, integer, integer, jsonb, jsonb, date);
 
 create or replace function tvtime_sync_show(
   p_tvmaze_id integer,
   p_tvmaze_status text,
   p_imdb_id text,
   p_original_name text,
+  p_poster_path text,
+  p_backdrop_path text,
   p_number_of_seasons integer,
   p_number_of_episodes integer,
   p_seasons jsonb,
@@ -25,6 +27,8 @@ begin
   set tvmaze_status = p_tvmaze_status,
       imdb_id = p_imdb_id,
       original_name = p_original_name,
+      poster_path = p_poster_path,
+      backdrop_path = p_backdrop_path,
       number_of_seasons = p_number_of_seasons,
       number_of_episodes = p_number_of_episodes,
       next_air_date = p_next_air_date,
@@ -36,5 +40,5 @@ begin
 end;
 $$;
 
-grant execute on function tvtime_sync_show(integer, text, text, text, integer, integer, jsonb, jsonb, date) to authenticated, service_role;
-revoke execute on function tvtime_sync_show(integer, text, text, text, integer, integer, jsonb, jsonb, date) from public, anon;
+grant execute on function tvtime_sync_show(integer, text, text, text, text, text, integer, integer, jsonb, jsonb, date) to authenticated, service_role;
+revoke execute on function tvtime_sync_show(integer, text, text, text, text, text, integer, integer, jsonb, jsonb, date) from public, anon;
