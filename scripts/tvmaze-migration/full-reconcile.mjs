@@ -22,12 +22,108 @@ if (!tvmazeId) {
   process.exit(1)
 }
 
+const ROMAN = { i: 1, ii: 2, iii: 3, iv: 4, v: 5, vi: 6, vii: 7, viii: 8, ix: 9, x: 10 }
+
+// A handful of episode titles differ between TMDB and TVmaze in ways no
+// generic rule can safely cover (typos, censorship, one-off suffixes) —
+// each pairing below was confirmed by exact air-date match before adding.
+const TITLE_ALIASES = {
+  'Hurricane! (III)': 'Hurricane!', // American Dad! (215), stored has a stray "(III)" suffix; only one episode exists on either side, air date 2011-10-02 confirms it
+  'Choosey Wives Choose Smith': 'Choosy Wives Choose Smith', // American Dad! (215), spelling variant, air date 2008-11-02 confirms it
+  "Holy S***, Jeff's Back!": "Holy Shit, Jeff's Back!", // American Dad! (215), censorship variant, air date 2015-05-18 confirms it
+  'Gifted Me Liberty': 'Gift Me Liberty', // American Dad! (215), spelling variant, air date 2016-06-13 confirms it
+  "Dancin' A-With My Cells": "Dancin' A-with My Cell", // American Dad! (215), pluralization variant, air date 2021-06-07 confirms it
+  // NOVA (3321) — position-changing variants, each confirmed by exact air-date match
+  'T. rex Exposed': 'T-Rex Exposed',
+  'Little Creatures Who Run the World': 'Ants: Little Creatures Who Run the World',
+  'Human Nature / Gene-Editing Reality Check': 'Human Nature / CRISPR Gene-Editing Reality Check',
+  'Computers v. Crime': 'Computer v. Crime',
+  // NOVA (3321) — already at the correct season/episode, title format differs only; alias so the
+  // reconcile report doesn't misreport these as needing attention
+  'Plague Fighters': 'Ebola: The Plague Fighters',
+  'Secrets of the Mind': 'Secrets of the Mind (aka Phantoms in the Brain)',
+  'Origins: Earth is Born': 'Origins (1): Earth is Born',
+  'Origins: How Life Began': 'Origins (2): How Life Began',
+  'Origins: Where Are the Aliens?': 'Origins (3): Where Are the Aliens?',
+  'Origins: Back to the Beginning': 'Origins (4): Back to the Beginning',
+  'The Four Winged Dinosaur': 'The Four-Winged Dinosaur',
+  'Absolute Zero: The Race for Absolute Zero': 'Absolute Zero: The Race for Absolute Zero (2)',
+  'Hunting The Hidden Dimension': 'Fractals: Hunting the Hidden Dimension',
+  'Your Brain: Perception Deception (1)': 'Your Brain: Perception Deception',
+  "Your Brain: Who's in Control? (2)": "Your Brain: Who's in Control?",
+  'Easter Island Origins': 'Easter Islands Origins',
+  // NOVA (3321) — these were sitting in another episode's real target slot
+  // (blocking the apply from completing); each confirmed by exact air-date match
+  'The Tsetse Trap': 'The Tse Tse Trap',
+  'Laser : Light of the 21st Century': 'Light of the 21st Century',
+  'The Final Frontier': 'The Final Frontier (2)',
+  "The Hunt for China's Dinosaurs (1)": "The Hunt for China's Dinosaurs",
+  'The Chip vs. the Chess Master': 'The Chip vs. the Chessmaster',
+  'Secrets of Lost Empires: Colosseum (4)': 'Secrets of Lost Empires (4): Colosseum',
+  'The Road to Happiness. : The Life and Times of Henry Ford': 'Road to Happiness',
+  'One Small Step': 'One Small Step (1)',
+  'Secrets of Lost Empires: Obelisk (3)': 'Secrets of Lost Empires (3): Obelisk',
+  'Secrets of Lost Empires: Inca (2)': 'Secrets of Lost Empires (2): Inca',
+  'Secrets of Lost Empires: Stonehenge (1)': 'Secrets of Lost Empires (1): Stonehenge',
+  // Unsolved Mysteries (40484), confirmed by air date / already-correct-position match
+  'Berkshires UFO': "Berkshire's UFO",
+  'Washington Inside Murder': 'Washington Insider Murder',
+  // Married... with Children (499), confirmed by air date / already-correct-position match
+  'Poke High': 'Poke High (aka The Red Grange Story)',
+  'The Camping Show': 'The Camping Show (aka A Period Piece)',
+  "Can't Dance, Don't Ask Me": "Can't Dance, Don't Ask Me (aka Kelly's Dance)",
+  "You Gotta Know When to Fold 'Em (1)": "You Gotta Know When to Hold 'Em (1)", // stored name is a straight typo -- TMDB has both parts titled "Fold 'Em"; air date 1990-02-11 confirms this is really part 1 ("Hold 'Em")
+  'What Goes Around Came Around': 'What Goes Around Comes Around',
+  'Dances With Weezy': 'Dances with Weezie',
+  'The Desperate Half-Hour': 'The Desperate Half-Hour (1)',
+  'How to Marry a Moron': 'How to Marry a Moron (2)',
+  'Rain Girl': 'Raingirl',
+  // Star Wars Rebels (117) — TVmaze tracks the series finale as one combined episode;
+  // TMDB split it into 2 parts. Kept our part-1 row (already correctly positioned at
+  // 4-15) and deleted the redundant part-2 row (same content, same air date, both watched).
+  'Family Reunion - and Farewell (1)': 'Family Reunion – and Farewell',
+}
+
+// Multi-part episode titles get formatted very differently between TMDB and
+// TVmaze ("Foo (1)" vs "Foo: Part 1" vs "Foo Pt. 1" vs "Foo (I)") — normalize
+// every variant down to "foo 1" so they compare equal regardless of source.
 function normalize(name) {
-  return (name || '')
+  let n = (TITLE_ALIASES[name] || name || '')
     .toLowerCase()
     .replace(/[’']/g, "'")
+    .replace(/&/g, ' and ')
+    .replace(/-/g, '')
+    .replace(/:\s*part\s+(\d+)/gi, ' $1')
+    .replace(/\bpart\s+(\d+)/gi, ' $1')
+    .replace(/\bpt\.?\s*(\d+)(\s*of\s*\d+)?/gi, ' $1')
+    .replace(/\(([ivx]+)\)/gi, (_, roman) => ` ${ROMAN[roman.toLowerCase()] ?? roman}`)
+    .replace(/\((\d+)\)/g, ' $1')
     .replace(/[^a-z0-9]+/g, ' ')
+    .replace(/\b(the|an?)\b/g, ' ')
+    .replace(/\s+/g, ' ')
     .trim()
+  return n
+}
+
+// PostgREST caps rows-per-request (commonly 1000) regardless of .select() —
+// a show with more stored episodes than that would silently lose the tail
+// of the list without paging through with .range().
+async function fetchAllEpisodes(showId) {
+  const pageSize = 1000
+  let page = 0
+  const all = []
+  for (;;) {
+    const { data, error } = await supabase
+      .from('tvtime_episodes')
+      .select('id, episode_number, name, air_date, watched, watched_at, tvtime_seasons!inner(id, season_number)')
+      .eq('show_id', showId)
+      .range(page * pageSize, page * pageSize + pageSize - 1)
+    if (error) throw error
+    all.push(...data)
+    if (data.length < pageSize) break
+    page++
+  }
+  return all
 }
 
 async function main() {
@@ -38,11 +134,7 @@ async function main() {
     .single()
   if (showErr) throw showErr
 
-  const { data: storedEpisodes, error: epErr } = await supabase
-    .from('tvtime_episodes')
-    .select('id, episode_number, name, air_date, watched, watched_at, tvtime_seasons!inner(id, season_number)')
-    .eq('show_id', show.id)
-  if (epErr) throw epErr
+  const storedEpisodes = await fetchAllEpisodes(show.id)
 
   const res = await fetch(`https://api.tvmaze.com/shows/${tvmazeId}/episodes`)
   const tvmazeEpisodes = await res.json()

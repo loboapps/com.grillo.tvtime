@@ -1,6 +1,6 @@
 create table tvtime_shows (
   id                 uuid primary key default gen_random_uuid(),
-  tmdb_id            integer not null unique,
+  tmdb_id            integer unique,
   tvmaze_id          integer unique,
   imdb_id            text,
   name               text not null,
