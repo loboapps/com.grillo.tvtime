@@ -111,6 +111,10 @@ async function main() {
             .from('tvtime_shows')
             .update({
               tvmaze_status: details.status,
+              imdb_id: details.imdb_id,
+              original_name: details.original_name,
+              poster_path: details.poster_path,
+              backdrop_path: details.backdrop_path,
               number_of_episodes: details.number_of_episodes,
               next_air_date: nextAirDate,
               synced_at: new Date().toISOString(),
@@ -138,6 +142,8 @@ async function main() {
           p_tvmaze_status: details.status,
           p_imdb_id: details.imdb_id,
           p_original_name: details.original_name,
+          p_poster_path: details.poster_path,
+          p_backdrop_path: details.backdrop_path,
           p_number_of_seasons: numberOfSeasons,
           p_number_of_episodes: details.number_of_episodes,
           p_seasons: seasonMetas,
