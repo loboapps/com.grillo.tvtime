@@ -126,7 +126,7 @@ export function SearchPage() {
                 />
               )}
               <div className="flex-1 min-w-0">
-                <p className="text-tvtime-100 font-semibold truncate">{r.name}</p>
+                <p className="text-tvtime-100 font-semibold truncate">{r.details.name}</p>
                 <p className="text-tvtime-300 text-sm">
                   {r.details.number_of_seasons} seasons · {r.details.number_of_episodes} eps ·{' '}
                   {formatActiveLabel(r.details.status)}
