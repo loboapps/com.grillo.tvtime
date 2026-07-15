@@ -50,7 +50,7 @@ async function syncShows(tvmazeIds: number[]): Promise<void> {
     tvmazeIds.map(async (tvmazeId) => {
       try {
         const details = await tvtimeService.getShowDetails(tvmazeId)
-        const episodes = await tvtimeService.fetchEpisodes(tvmazeId)
+        const episodes = await tvtimeService.fetchEpisodes(tvmazeId, details.language, details.imdb_id)
         await tvtimeWriteService.syncShow(
           tvmazeId,
           details.status,

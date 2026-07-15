@@ -72,7 +72,7 @@ export function ShowDetailPage() {
         tvtimeService.loadShow(id),
         tvtimeService.getShowDetails(id),
       ])
-      const episodes = await tvtimeService.fetchEpisodes(id)
+      const episodes = await tvtimeService.fetchEpisodes(id, liveDetails.language, liveDetails.imdb_id)
       setDetail(showDetail)
       setTvmazeDetails(liveDetails)
       setStillPathLookup(buildStillPathLookup(episodes))
@@ -184,7 +184,7 @@ export function ShowDetailPage() {
     setRefreshing(true)
     try {
       const liveDetails = await tvtimeService.getShowDetails(id)
-      const episodes = await tvtimeService.fetchEpisodes(id)
+      const episodes = await tvtimeService.fetchEpisodes(id, liveDetails.language, liveDetails.imdb_id)
       await tvtimeWriteService.syncShow(
         id,
         liveDetails.status,

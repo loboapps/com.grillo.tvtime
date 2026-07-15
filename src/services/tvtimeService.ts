@@ -59,10 +59,16 @@ export const tvtimeService = {
   // TMDB's per-season endpoint this replaces. Includes season 0 (specials) —
   // they're stored like any other episode; any filtering for display purposes
   // happens in the UI, not at the data layer.
-  async fetchEpisodes(tvmazeId: number): Promise<(TvmazeEpisode & { season_number: number })[]> {
+  async fetchEpisodes(
+    tvmazeId: number,
+    language?: string,
+    imdbId?: string | null,
+  ): Promise<(TvmazeEpisode & { season_number: number })[]> {
     const data = await invokeTvmaze<{ episodes: (TvmazeEpisode & { season_number: number })[] }>({
       action: 'episodes',
       id: tvmazeId,
+      language,
+      imdb_id: imdbId ?? undefined,
     })
     return data.episodes
   },
@@ -89,7 +95,7 @@ export const tvtimeWriteService = {
   },
 
   async addShowFromDetails(details: TvmazeShowDetails): Promise<void> {
-    const episodes = await tvtimeService.fetchEpisodes(details.id)
+    const episodes = await tvtimeService.fetchEpisodes(details.id, details.language, details.imdb_id)
     await tvtimeWriteService.addShow({
       tvmazeId: details.id,
       name: details.name,

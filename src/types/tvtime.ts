@@ -44,6 +44,7 @@ export interface TvmazeShowDetails {
   id: number
   name: string
   original_name: string | null
+  language: string
   poster_path: string | null
   backdrop_path: string | null
   status: string
