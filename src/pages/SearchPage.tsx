@@ -98,8 +98,6 @@ export function SearchPage() {
         </div>
       </div>
 
-      {loading && <p className="text-tvtime-300 text-center">Searching...</p>}
-
       {searchError && (
         <div className="px-4 py-3 text-center">
           <p className="text-red-400 text-sm mb-2">{searchError}</p>
@@ -114,41 +112,48 @@ export function SearchPage() {
 
       {showNoResults && <p className="text-tvtime-300 text-center py-4">No results found.</p>}
 
-      <ul>
-        {results.map((r) => (
-          <li key={r.id} className="flex items-center gap-3 px-4 py-3 border-b border-tvtime-700">
-            <Link to={`/show/${r.id}`} className="flex items-center gap-3 flex-1 min-w-0">
-              {r.poster_path && (
-                <img
-                  src={r.poster_path}
-                  alt={r.name}
-                  className="w-12 h-16 object-cover rounded"
-                />
-              )}
-              <div className="flex-1 min-w-0">
-                <p className="text-tvtime-100 font-semibold truncate">{r.details.name}</p>
-                <p className="text-tvtime-300 text-sm">
-                  {r.details.number_of_seasons} seasons · {r.details.number_of_episodes} eps ·{' '}
-                  {formatActiveLabel(r.details.status)}
-                </p>
-              </div>
-            </Link>
-            <button
-              disabled={trackedIds.has(r.id)}
-              onClick={() => handleAdd(r)}
-              className={`w-8 h-8 rounded-md flex items-center justify-center shrink-0 ${
-                trackedIds.has(r.id) ? 'bg-tvtime-700' : 'bg-yellow-500'
-              } disabled:opacity-60`}
-            >
-              {trackedIds.has(r.id) ? (
-                <icons.check size={18} className="text-tvtime-300" />
-              ) : (
-                <icons.plus size={18} className="text-tvtime-900" />
-              )}
-            </button>
-          </li>
-        ))}
-      </ul>
+      <div className="relative">
+        {loading && (
+          <div className="absolute inset-0 z-10 bg-tvtime-900/70 flex justify-center pt-4">
+            <p className="text-tvtime-300">Searching...</p>
+          </div>
+        )}
+        <ul>
+          {results.map((r) => (
+            <li key={r.id} className="flex items-center gap-3 px-4 py-3 border-b border-tvtime-700">
+              <Link to={`/show/${r.id}`} className="flex items-center gap-3 flex-1 min-w-0">
+                {r.poster_path && (
+                  <img
+                    src={r.poster_path}
+                    alt={r.name}
+                    className="w-12 h-16 object-cover rounded"
+                  />
+                )}
+                <div className="flex-1 min-w-0">
+                  <p className="text-tvtime-100 font-semibold truncate">{r.details.name}</p>
+                  <p className="text-tvtime-300 text-sm">
+                    {r.details.number_of_seasons} seasons · {r.details.number_of_episodes} eps ·{' '}
+                    {formatActiveLabel(r.details.status)}
+                  </p>
+                </div>
+              </Link>
+              <button
+                disabled={trackedIds.has(r.id)}
+                onClick={() => handleAdd(r)}
+                className={`w-8 h-8 rounded-md flex items-center justify-center shrink-0 ${
+                  trackedIds.has(r.id) ? 'bg-tvtime-700' : 'bg-yellow-500'
+                } disabled:opacity-60`}
+              >
+                {trackedIds.has(r.id) ? (
+                  <icons.check size={18} className="text-tvtime-300" />
+                ) : (
+                  <icons.plus size={18} className="text-tvtime-900" />
+                )}
+              </button>
+            </li>
+          ))}
+        </ul>
+      </div>
 
       {toast && <Toast message={toast.message} variant={toast.variant} />}
     </div>

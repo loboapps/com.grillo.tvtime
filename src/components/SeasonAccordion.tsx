@@ -15,7 +15,8 @@ export function SeasonAccordion({ season, stillPathLookup, posterPath, trackable
         className="w-full flex items-center justify-between px-4 py-3 text-left"
       >
         <span className="text-tvtime-100 font-semibold">
-          {season.name ?? `Season ${season.season_number}`}
+          Season {season.season_number}
+          {season.name ? ` - ${season.name}` : ''}
         </span>
         <span className="flex items-center gap-2">
           <span className="text-tvtime-300 text-sm">
