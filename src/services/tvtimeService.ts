@@ -73,6 +73,7 @@ export const tvtimeWriteService = {
     const { error } = await supabase.rpc('tvtime_add_show', {
       p_tvmaze_id: input.tvmazeId,
       p_name: input.name,
+      p_original_name: input.originalName,
       p_poster_path: input.posterPath,
       p_backdrop_path: input.backdropPath,
       p_tvmaze_status: input.tvmazeStatus,
@@ -92,6 +93,7 @@ export const tvtimeWriteService = {
     await tvtimeWriteService.addShow({
       tvmazeId: details.id,
       name: details.name,
+      originalName: details.original_name,
       posterPath: details.poster_path,
       backdropPath: details.backdrop_path,
       tvmazeStatus: details.status,
@@ -126,6 +128,7 @@ export const tvtimeWriteService = {
     tvmazeId: number,
     tvmazeStatus: string,
     imdbId: string | null,
+    originalName: string | null,
     numberOfSeasons: number,
     numberOfEpisodes: number,
     seasons: TvmazeShowDetails['seasons'],
@@ -136,6 +139,7 @@ export const tvtimeWriteService = {
       p_tvmaze_id: tvmazeId,
       p_tvmaze_status: tvmazeStatus,
       p_imdb_id: imdbId,
+      p_original_name: originalName,
       p_number_of_seasons: numberOfSeasons,
       p_number_of_episodes: numberOfEpisodes,
       p_seasons: seasons,

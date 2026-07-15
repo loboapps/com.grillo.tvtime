@@ -43,6 +43,7 @@ export interface TvmazeSeason {
 export interface TvmazeShowDetails {
   id: number
   name: string
+  original_name: string | null
   poster_path: string | null
   backdrop_path: string | null
   status: string
@@ -63,6 +64,7 @@ export interface TvmazeEpisode {
 export interface AddShowInput {
   tvmazeId: number
   name: string
+  originalName: string | null
   posterPath: string | null
   backdropPath: string | null
   tvmazeStatus: string
