@@ -16,6 +16,7 @@ function makeSeason(seasonNumber: number, episodes: { episode_number: number; wa
       name: null,
       air_date: null,
       watched: e.watched,
+      watched_at: null,
     })),
   }
 }
