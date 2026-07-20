@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { icons } from '@/utils/icons'
+import { formatDate } from '@/utils/formatDate'
 import type { SeasonAccordionProps } from '@/types/tvtime'
 
 export function SeasonAccordion({ season, stillPathLookup, posterPath, trackable, onToggleEpisode }: SeasonAccordionProps) {
@@ -7,13 +8,6 @@ export function SeasonAccordion({ season, stillPathLookup, posterPath, trackable
   const [failedStills, setFailedStills] = useState<Set<string>>(new Set())
   const fullyWatched = season.watched_count === season.episode_count && season.episode_count > 0
   const progressPct = season.episode_count > 0 ? (season.watched_count / season.episode_count) * 100 : 0
-
-  const formatWatchedDate = (watchedAt: string) => {
-    const date = new Date(watchedAt)
-    const day = String(date.getDate()).padStart(2, '0')
-    const month = String(date.getMonth() + 1).padStart(2, '0')
-    return `${day}-${month}-${date.getFullYear()}`
-  }
 
   return (
     <div className="border-b border-tvtime-700">
@@ -76,7 +70,7 @@ export function SeasonAccordion({ season, stillPathLookup, posterPath, trackable
                   {episode.watched && episode.watched_at && (
                     <p className="text-tvtime-300 text-xs flex items-center gap-1">
                       <icons.eye size={12} />
-                      {formatWatchedDate(episode.watched_at)}
+                      {formatDate(episode.watched_at)}
                     </p>
                   )}
                 </div>
