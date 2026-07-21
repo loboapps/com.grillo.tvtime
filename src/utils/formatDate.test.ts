@@ -1,10 +1,13 @@
+/// <reference types="node" />
+process.env.TZ = 'America/Sao_Paulo'
+
 import { describe, it, expect } from 'vitest'
 import { formatDate } from './formatDate'
 
 describe('formatDate', () => {
   it('formats an ISO date as DD-MM-YYYY', () => {
-    // Note: '2023-08-15' is parsed as UTC midnight, which is Aug 14 21:00 in Sao Paulo (UTC-3)
-    // so getDate() returns 14. This is timezone-dependent behavior from using local accessors.
+    // '2023-08-15' parses as UTC midnight; in the pinned America/Sao_Paulo
+    // timezone (UTC-3) that's Aug 14, 21:00 local — hence getDate() returns 14.
     expect(formatDate('2023-08-15')).toBe('14-08-2023')
   })
 
@@ -13,8 +16,8 @@ describe('formatDate', () => {
   })
 
   it('pads single-digit day and month', () => {
-    // Note: '2023-03-07' is parsed as UTC midnight, which is Mar 6 21:00 in Sao Paulo (UTC-3)
-    // so getDate() returns 6. This is timezone-dependent behavior from using local accessors.
+    // '2023-03-07' parses as UTC midnight; in the pinned America/Sao_Paulo
+    // timezone (UTC-3) that's Mar 6, 21:00 local — hence getDate() returns 6.
     expect(formatDate('2023-03-07')).toBe('06-03-2023')
   })
 })
