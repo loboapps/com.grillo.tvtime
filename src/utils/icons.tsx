@@ -2,6 +2,7 @@ import { Tv, Search, User, ChevronLeft, ChevronRight, ChevronDown, Plus, Check, 
 
 export const icons = {
   shows: Tv,
+  tv: Tv,
   search: Search,
   user: User,
   back: ChevronLeft,

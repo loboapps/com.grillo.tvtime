@@ -149,10 +149,23 @@ export function EpisodeDetailPage() {
       </div>
 
       <div className="px-4 py-4 space-y-3">
-        <h1 className="text-tvtime-100 text-xl font-bold">{episode.name}</h1>
-        {episode.air_date && <p className="text-tvtime-300 text-sm">{formatDate(episode.air_date)}</p>}
+        <div className="bg-tvtime-800 rounded-lg p-4">
+          <h1 className="text-tvtime-100 text-xl font-bold">{episode.name}</h1>
+          {episode.air_date && (
+            <p className="text-tvtime-300 text-sm flex items-center gap-1 mt-1">
+              <icons.tv size={14} />
+              {formatDate(episode.air_date)}
+            </p>
+          )}
+          {episode.watched && episode.watched_at && (
+            <p className="text-tvtime-300 text-xs flex items-center gap-1 mt-1">
+              <icons.eye size={12} />
+              {formatDate(episode.watched_at)}
+            </p>
+          )}
+        </div>
 
-        <div className="flex items-center justify-between">
+        <div className="bg-tvtime-800 rounded-lg p-4 flex items-center justify-between">
           <span className="text-tvtime-300 text-sm font-semibold">
             S{season.season_number} | E{episode.episode_number}
           </span>
@@ -173,7 +186,11 @@ export function EpisodeDetailPage() {
           </button>
         </div>
 
-        {summary && <p className="text-tvtime-300 text-sm leading-relaxed">{summary}</p>}
+        {summary && (
+          <div className="bg-tvtime-800 rounded-lg p-4">
+            <p className="text-tvtime-300 text-sm leading-relaxed">{summary}</p>
+          </div>
+        )}
       </div>
 
       {pendingMark && (
