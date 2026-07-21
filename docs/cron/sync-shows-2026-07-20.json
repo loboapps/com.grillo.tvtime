@@ -1,0 +1,504 @@
+{
+  "date": "2026-07-20",
+  "timestamp": "2026-07-20T08:43:24.385Z",
+  "totals": {
+    "tracked": 569,
+    "unchanged": 520,
+    "updated": 49,
+    "failed": 0
+  },
+  "updated": [
+    {
+      "tvmaze_id": 532,
+      "name": "Scrubs",
+      "old_seasons": 9,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0
+      ],
+      "next_air_date": null
+    },
+    {
+      "tvmaze_id": 840,
+      "name": "Treme",
+      "old_seasons": 4,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0
+      ],
+      "next_air_date": null
+    },
+    {
+      "tvmaze_id": 520,
+      "name": "Lie to Me*",
+      "old_seasons": 3,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0
+      ],
+      "next_air_date": null
+    },
+    {
+      "tvmaze_id": 563,
+      "name": "Star Wars: The Clone Wars",
+      "old_seasons": 7,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0
+      ],
+      "next_air_date": null
+    },
+    {
+      "tvmaze_id": 215,
+      "name": "American Dad!",
+      "old_seasons": 22,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0
+      ],
+      "next_air_date": null
+    },
+    {
+      "tvmaze_id": 80,
+      "name": "Modern Family",
+      "old_seasons": 11,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0
+      ],
+      "next_air_date": null
+    },
+    {
+      "tvmaze_id": 175,
+      "name": "House of Cards",
+      "old_seasons": 6,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0
+      ],
+      "next_air_date": null
+    },
+    {
+      "tvmaze_id": 169,
+      "name": "Breaking Bad",
+      "old_seasons": 5,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0
+      ],
+      "next_air_date": null
+    },
+    {
+      "tvmaze_id": 822,
+      "name": "Penn & Teller: Bullshit!",
+      "old_seasons": 8,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0
+      ],
+      "next_air_date": null
+    },
+    {
+      "tvmaze_id": 123,
+      "name": "Lost",
+      "old_seasons": 6,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0
+      ],
+      "next_air_date": null
+    },
+    {
+      "tvmaze_id": 160,
+      "name": "Weeds",
+      "old_seasons": 8,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0
+      ],
+      "next_air_date": null
+    },
+    {
+      "tvmaze_id": 526,
+      "name": "The Office",
+      "old_seasons": 9,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0
+      ],
+      "next_air_date": null
+    },
+    {
+      "tvmaze_id": 795,
+      "name": "Jericho",
+      "old_seasons": 2,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0
+      ],
+      "next_air_date": null
+    },
+    {
+      "tvmaze_id": 2,
+      "name": "Person of Interest",
+      "old_seasons": 5,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0
+      ],
+      "next_air_date": null
+    },
+    {
+      "tvmaze_id": 73,
+      "name": "The Walking Dead",
+      "old_seasons": 11,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0
+      ],
+      "next_air_date": null
+    },
+    {
+      "tvmaze_id": 167,
+      "name": "24",
+      "old_seasons": 9,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0
+      ],
+      "next_air_date": null
+    },
+    {
+      "tvmaze_id": 3182,
+      "name": "American Gods",
+      "old_seasons": 3,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0
+      ],
+      "next_air_date": null
+    },
+    {
+      "tvmaze_id": 61,
+      "name": "Orphan Black",
+      "old_seasons": 5,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0
+      ],
+      "next_air_date": null
+    },
+    {
+      "tvmaze_id": 458,
+      "name": "FlashForward",
+      "old_seasons": 1,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0
+      ],
+      "next_air_date": null
+    },
+    {
+      "tvmaze_id": 270,
+      "name": "The League",
+      "old_seasons": 7,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0
+      ],
+      "next_air_date": null
+    },
+    {
+      "tvmaze_id": 13645,
+      "name": "Soupçons",
+      "old_seasons": 1,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0
+      ],
+      "next_air_date": null
+    },
+    {
+      "tvmaze_id": 20,
+      "name": "The Strain",
+      "old_seasons": 4,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0
+      ],
+      "next_air_date": null
+    },
+    {
+      "tvmaze_id": 143,
+      "name": "Silicon Valley",
+      "old_seasons": 6,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0
+      ],
+      "next_air_date": null
+    },
+    {
+      "tvmaze_id": 403,
+      "name": "Touch",
+      "old_seasons": 2,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0
+      ],
+      "next_air_date": null
+    },
+    {
+      "tvmaze_id": 29,
+      "name": "Vikings",
+      "old_seasons": 6,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0
+      ],
+      "next_air_date": null
+    },
+    {
+      "tvmaze_id": 269,
+      "name": "Peaky Blinders",
+      "old_seasons": 8,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0
+      ],
+      "next_air_date": null
+    },
+    {
+      "tvmaze_id": 1415,
+      "name": "Heroes Reborn",
+      "old_seasons": 1,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0
+      ],
+      "next_air_date": null
+    },
+    {
+      "tvmaze_id": 23451,
+      "name": "The Vietnam War",
+      "old_seasons": 1,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0
+      ],
+      "next_air_date": null
+    },
+    {
+      "tvmaze_id": 694,
+      "name": "Monty Python's Flying Circus",
+      "old_seasons": 4,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0
+      ],
+      "next_air_date": null
+    },
+    {
+      "tvmaze_id": 1013,
+      "name": "The Playboy Club",
+      "old_seasons": 1,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0
+      ],
+      "next_air_date": null
+    },
+    {
+      "tvmaze_id": 1871,
+      "name": "Mr. Robot",
+      "old_seasons": 4,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0
+      ],
+      "next_air_date": null
+    },
+    {
+      "tvmaze_id": 1825,
+      "name": "The Expanse",
+      "old_seasons": 6,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0
+      ],
+      "next_air_date": null
+    },
+    {
+      "tvmaze_id": 58846,
+      "name": "Dexter: New Blood",
+      "old_seasons": 1,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0
+      ],
+      "next_air_date": null
+    },
+    {
+      "tvmaze_id": 2481,
+      "name": "How the Universe Works",
+      "old_seasons": 11,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0
+      ],
+      "next_air_date": null
+    },
+    {
+      "tvmaze_id": 820,
+      "name": "Hung",
+      "old_seasons": 3,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0
+      ],
+      "next_air_date": null
+    },
+    {
+      "tvmaze_id": 60521,
+      "name": "Supacell",
+      "old_seasons": 2,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        2
+      ],
+      "next_air_date": null
+    },
+    {
+      "tvmaze_id": 158,
+      "name": "Fringe",
+      "old_seasons": 5,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0
+      ],
+      "next_air_date": null
+    },
+    {
+      "tvmaze_id": 171,
+      "name": "How I Met Your Mother",
+      "old_seasons": 9,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0
+      ],
+      "next_air_date": null
+    },
+    {
+      "tvmaze_id": 30,
+      "name": "American Horror Story",
+      "old_seasons": 13,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0
+      ],
+      "next_air_date": "2026-09-24"
+    },
+    {
+      "tvmaze_id": 134,
+      "name": "Heroes",
+      "old_seasons": 4,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0
+      ],
+      "next_air_date": null
+    },
+    {
+      "tvmaze_id": 161,
+      "name": "Dexter",
+      "old_seasons": 8,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0
+      ],
+      "next_air_date": null
+    },
+    {
+      "tvmaze_id": 5067,
+      "name": "Pinky and the Brain",
+      "old_seasons": 4,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0
+      ],
+      "next_air_date": null
+    },
+    {
+      "tvmaze_id": 367,
+      "name": "Six Feet Under",
+      "old_seasons": 5,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0
+      ],
+      "next_air_date": null
+    },
+    {
+      "tvmaze_id": 499,
+      "name": "Married... with Children",
+      "old_seasons": 11,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0
+      ],
+      "next_air_date": null
+    },
+    {
+      "tvmaze_id": 32,
+      "name": "Fargo",
+      "old_seasons": 5,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0
+      ],
+      "next_air_date": null
+    },
+    {
+      "tvmaze_id": 42846,
+      "name": "Dune: Prophecy",
+      "old_seasons": 2,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0,
+        2
+      ],
+      "next_air_date": null
+    },
+    {
+      "tvmaze_id": 77414,
+      "name": "City of God: The Fight Rages On",
+      "old_seasons": 2,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        2
+      ],
+      "next_air_date": null
+    },
+    {
+      "tvmaze_id": 3144,
+      "name": "Preacher",
+      "old_seasons": 4,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        0
+      ],
+      "next_air_date": null
+    },
+    {
+      "tvmaze_id": 57698,
+      "name": "Hard Knocks in Season",
+      "old_seasons": 5,
+      "new_seasons": null,
+      "resolved_tba_seasons": [
+        5
+      ],
+      "next_air_date": null
+    }
+  ],
+  "failed": []
+}
