@@ -65,6 +65,7 @@ interface TvmazeEpisode {
   name: string;
   airdate: string;
   image: { medium: string; original: string } | null;
+  summary: string | null;
 }
 
 interface TmdbFindResult {
@@ -286,6 +287,7 @@ async function handleEpisodes(id: number, language?: string, imdbId?: string): P
     name: ep.name,
     air_date: ep.airdate || null,
     still_path: ep.image?.original ?? null,
+    summary: ep.summary ?? null,
   }));
   return new Response(JSON.stringify({ episodes }), {
     status: 200,

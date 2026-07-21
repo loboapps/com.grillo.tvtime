@@ -3,7 +3,7 @@ import { buildStillPathLookup } from './buildStillPathLookup'
 import type { TvmazeEpisode } from '@/types/tvtime'
 
 function makeEpisode(seasonNumber: number, episodeNumber: number, stillPath: string | null): TvmazeEpisode & { season_number: number } {
-  return { season_number: seasonNumber, episode_number: episodeNumber, name: `S${seasonNumber}E${episodeNumber}`, air_date: null, still_path: stillPath }
+  return { season_number: seasonNumber, episode_number: episodeNumber, name: `S${seasonNumber}E${episodeNumber}`, air_date: null, still_path: stillPath, summary: null }
 }
 
 describe('buildStillPathLookup', () => {

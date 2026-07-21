@@ -60,6 +60,7 @@ export interface TvmazeEpisode {
   name: string
   air_date: string | null
   still_path: string | null
+  summary: string | null
 }
 
 export interface AddShowInput {
