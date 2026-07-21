@@ -1,15 +1,15 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { icons } from '@/utils/icons'
-import { tvtimeService, tvtimeWriteService } from '@/services/tvtimeService'
+import { tvtimeService } from '@/services/tvtimeService'
 import { Toast } from '@/components/Toast'
 import { Skeleton } from '@/components/Skeleton'
 import { MarkWatchedModal } from '@/components/MarkWatchedModal'
 import { useToast } from '@/utils/useToast'
-import { hasEarlierUnwatchedEpisode } from '@/utils/hasEarlierUnwatchedEpisode'
+import { useEpisodeWatchActions } from '@/utils/useEpisodeWatchActions'
 import { stripHtml } from '@/utils/stripHtml'
 import { formatDate } from '@/utils/formatDate'
-import type { ShowDetail, ShowSeasonDetail, TvmazeEpisode, EpisodeDetailNavigationState } from '@/types/tvtime'
+import type { ShowDetail, TvmazeEpisode, EpisodeDetailNavigationState } from '@/types/tvtime'
 
 function isEpisodeDetailState(value: unknown): value is EpisodeDetailNavigationState {
   if (typeof value !== 'object' || value === null) return false
@@ -42,7 +42,6 @@ export function EpisodeDetailPage() {
   const [liveEpisode, setLiveEpisode] = useState<(TvmazeEpisode & { season_number: number }) | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [pendingMark, setPendingMark] = useState<string | null>(null)
   const [failedStill, setFailedStill] = useState(false)
   const { toast, showToast } = useToast()
 
@@ -93,61 +92,8 @@ export function EpisodeDetailPage() {
     }
   }, [state, navigate])
 
-  async function handleToggleWatched(
-    episodeId: string,
-    currentlyWatched: boolean,
-    seasons: ShowSeasonDetail[],
-    seasonNumber: number,
-    episodeNumber: number,
-  ) {
-    if (currentlyWatched) {
-      try {
-        await tvtimeWriteService.unwatchEpisode(episodeId)
-        await refresh()
-      } catch (err) {
-        console.error(err)
-        showToast("Couldn't update the episode.")
-      }
-      return
-    }
-
-    if (hasEarlierUnwatchedEpisode(seasons, seasonNumber, episodeNumber)) {
-      setPendingMark(episodeId)
-      return
-    }
-
-    try {
-      await tvtimeWriteService.watchEpisode(episodeId)
-      await refresh()
-    } catch (err) {
-      console.error(err)
-      showToast("Couldn't update the episode.")
-    }
-  }
-
-  async function handleMarkJustThis() {
-    if (!pendingMark) return
-    try {
-      await tvtimeWriteService.watchEpisode(pendingMark)
-      setPendingMark(null)
-      await refresh()
-    } catch (err) {
-      console.error(err)
-      showToast("Couldn't update the episode.")
-    }
-  }
-
-  async function handleMarkAllPrevious() {
-    if (!pendingMark) return
-    try {
-      await tvtimeWriteService.watchEpisode(pendingMark, true)
-      setPendingMark(null)
-      await refresh()
-    } catch (err) {
-      console.error(err)
-      showToast("Couldn't update the episodes.")
-    }
-  }
+  const { pendingMark, cancelPendingMark, handleToggleEpisode, handleMarkJustThis, handleMarkAllPrevious } =
+    useEpisodeWatchActions(detail?.seasons, refresh, showToast)
 
   if (!state) {
     return null
@@ -212,10 +158,9 @@ export function EpisodeDetailPage() {
           </span>
           <button
             onClick={() =>
-              handleToggleWatched(
+              handleToggleEpisode(
                 episode.episode_id,
                 episode.watched,
-                detail.seasons,
                 season.season_number,
                 episode.episode_number,
               )
@@ -233,7 +178,7 @@ export function EpisodeDetailPage() {
 
       {pendingMark && (
         <MarkWatchedModal
-          onCancel={() => setPendingMark(null)}
+          onCancel={cancelPendingMark}
           onMarkJustThis={handleMarkJustThis}
           onMarkAllPrevious={handleMarkAllPrevious}
         />
