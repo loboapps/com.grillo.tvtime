@@ -138,12 +138,19 @@ export interface ShowDetail {
   seasons: ShowSeasonDetail[]
 }
 
+export interface EpisodeDetailNavigationState {
+  tvmazeId: number
+  seasonNumber: number
+  episodeNumber: number
+}
+
 export interface SeasonAccordionProps {
   season: ShowSeasonDetail
   stillPathLookup: Record<string, string | null>
   posterPath: string | null
   trackable: boolean
   onToggleEpisode: (episodeId: string, currentlyWatched: boolean, seasonNumber: number, episodeNumber: number) => void
+  onSelectEpisode: (seasonNumber: number, episodeNumber: number) => void
 }
 
 export interface MarkWatchedModalProps {

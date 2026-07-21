@@ -5,6 +5,7 @@ import { LoginPage } from '@/pages/LoginPage'
 import { WatchListPage } from '@/pages/WatchListPage'
 import { SearchPage } from '@/pages/SearchPage'
 import { ShowDetailPage } from '@/pages/ShowDetailPage'
+import { EpisodeDetailPage } from '@/pages/EpisodeDetailPage'
 
 export default function App() {
   const location = useLocation()
@@ -35,6 +36,14 @@ export default function App() {
           element={
             <PrivateRoute>
               <ShowDetailPage />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/episode-detail"
+          element={
+            <PrivateRoute>
+              <EpisodeDetailPage />
             </PrivateRoute>
           }
         />

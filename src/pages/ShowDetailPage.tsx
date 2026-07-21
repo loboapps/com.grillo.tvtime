@@ -305,6 +305,9 @@ export function ShowDetailPage() {
               posterPath={detail.poster_path}
               trackable
               onToggleEpisode={handleToggleEpisode}
+              onSelectEpisode={(seasonNumber, episodeNumber) =>
+                navigate('/episode-detail', { state: { tvmazeId: id, seasonNumber, episodeNumber } })
+              }
             />
           ))
         : tvmazeDetails.seasons.map((season) => (
@@ -323,6 +326,7 @@ export function ShowDetailPage() {
               posterPath={tvmazeDetails.poster_path}
               trackable={false}
               onToggleEpisode={() => {}}
+              onSelectEpisode={() => {}}
             />
           ))}
 

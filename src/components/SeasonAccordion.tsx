@@ -3,7 +3,7 @@ import { icons } from '@/utils/icons'
 import { formatDate } from '@/utils/formatDate'
 import type { SeasonAccordionProps } from '@/types/tvtime'
 
-export function SeasonAccordion({ season, stillPathLookup, posterPath, trackable, onToggleEpisode }: SeasonAccordionProps) {
+export function SeasonAccordion({ season, stillPathLookup, posterPath, trackable, onToggleEpisode, onSelectEpisode }: SeasonAccordionProps) {
   const [open, setOpen] = useState(false)
   const [failedStills, setFailedStills] = useState<Set<string>>(new Set())
   const fullyWatched = season.watched_count === season.episode_count && season.episode_count > 0
@@ -41,7 +41,11 @@ export function SeasonAccordion({ season, stillPathLookup, posterPath, trackable
             const stillPath = stillPathLookup[`${season.season_number}-${episode.episode_number}`]
             const showStill = stillPath && !failedStills.has(episode.episode_id)
             return (
-              <div key={episode.episode_id} className="flex items-center gap-3 px-4 py-3">
+              <div
+                key={episode.episode_id}
+                onClick={() => onSelectEpisode(season.season_number, episode.episode_number)}
+                className="flex items-center gap-3 px-4 py-3 cursor-pointer active:bg-tvtime-800"
+              >
                 <div className="w-24 h-14 shrink-0 rounded overflow-hidden bg-tvtime-800">
                   {showStill ? (
                     <img
@@ -76,7 +80,10 @@ export function SeasonAccordion({ season, stillPathLookup, posterPath, trackable
                 </div>
                 <button
                   disabled={!trackable}
-                  onClick={() => onToggleEpisode(episode.episode_id, episode.watched, season.season_number, episode.episode_number)}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    onToggleEpisode(episode.episode_id, episode.watched, season.season_number, episode.episode_number)
+                  }}
                   className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
                     episode.watched ? 'bg-yellow-500' : 'bg-tvtime-700'
                   } disabled:opacity-40`}
