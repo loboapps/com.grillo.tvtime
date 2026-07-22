@@ -130,14 +130,6 @@ export const tvtimeWriteService = {
     if (error) throw error
   },
 
-  async watchSeason(seasonId: string, watched: boolean): Promise<void> {
-    const { error } = await supabase.rpc('tvtime_watch_season', {
-      p_season_id: seasonId,
-      p_watched: watched,
-    })
-    if (error) throw error
-  },
-
   async syncShow(
     tvmazeId: number,
     tvmazeStatus: string,
@@ -163,6 +155,14 @@ export const tvtimeWriteService = {
       p_seasons: seasons,
       p_episodes: episodes,
       p_next_air_date: nextAirDate,
+    })
+    if (error) throw error
+  },
+
+  async watchSeason(seasonId: string, watched: boolean): Promise<void> {
+    const { error } = await supabase.rpc('tvtime_watch_season', {
+      p_season_id: seasonId,
+      p_watched: watched,
     })
     if (error) throw error
   },
