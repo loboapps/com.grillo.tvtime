@@ -150,6 +150,7 @@ export interface SeasonAccordionProps {
   posterPath: string | null
   trackable: boolean
   onToggleEpisode: (episodeId: string, currentlyWatched: boolean, seasonNumber: number, episodeNumber: number) => void
+  onToggleSeason: (seasonId: string, currentlyFullyWatched: boolean) => void
   onSelectEpisode: (seasonNumber: number, episodeNumber: number) => void
 }
 
