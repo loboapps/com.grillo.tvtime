@@ -12,7 +12,6 @@ declare
   v_show_id uuid;
   v_season_number integer;
   v_episode_number integer;
-  v_remaining integer;
 begin
   select e.show_id into v_show_id from tvtime_episodes e where e.id = p_episode_id;
 
