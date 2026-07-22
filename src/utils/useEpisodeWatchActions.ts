@@ -69,11 +69,22 @@ export function useEpisodeWatchActions(
     }
   }
 
+  async function handleToggleSeason(seasonId: string, currentlyFullyWatched: boolean) {
+    try {
+      await tvtimeWriteService.watchSeason(seasonId, !currentlyFullyWatched)
+      await refresh()
+    } catch (err) {
+      console.error(err)
+      showToast("Couldn't update the season.")
+    }
+  }
+
   return {
     pendingMark,
     cancelPendingMark,
     handleToggleEpisode,
     handleMarkJustThis,
     handleMarkAllPrevious,
+    handleToggleSeason,
   }
 }
