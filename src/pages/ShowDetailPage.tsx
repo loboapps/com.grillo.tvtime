@@ -114,7 +114,7 @@ export function ShowDetailPage() {
     load()
   }, [load])
 
-  const { pendingMark, cancelPendingMark, handleToggleEpisode, handleMarkJustThis, handleMarkAllPrevious } =
+  const { pendingMark, cancelPendingMark, handleToggleEpisode, handleMarkJustThis, handleMarkAllPrevious, handleToggleSeason } =
     useEpisodeWatchActions(detail?.seasons, refreshDetail, showToast)
 
   async function handleAdd() {
@@ -252,6 +252,7 @@ export function ShowDetailPage() {
               posterPath={detail.poster_path}
               trackable
               onToggleEpisode={handleToggleEpisode}
+              onToggleSeason={handleToggleSeason}
               onSelectEpisode={(seasonNumber, episodeNumber) =>
                 navigate('/episode-detail', { state: { tvmazeId: id, seasonNumber, episodeNumber } })
               }
@@ -273,6 +274,7 @@ export function ShowDetailPage() {
               posterPath={tvmazeDetails.poster_path}
               trackable={false}
               onToggleEpisode={() => {}}
+              onToggleSeason={() => {}}
               onSelectEpisode={() => {}}
             />
           ))}
