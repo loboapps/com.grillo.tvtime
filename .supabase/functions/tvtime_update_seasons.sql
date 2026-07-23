@@ -9,15 +9,25 @@ security invoker
 set search_path = 'public'
 as $$
 begin
-  with upserted_seasons as (
+  with season_episode_counts as (
+    select (e->>'season_number')::integer as season_number, count(*) as actual_count
+    from jsonb_array_elements(p_episodes) as e
+    group by (e->>'season_number')::integer
+  ),
+  upserted_seasons as (
+    -- A season with no reported episode order and no real episodes in this payload is an
+    -- unannounced/placeholder season (e.g. TVmaze listing a future season before it has any
+    -- episodes) — skip it rather than storing a permanent 0/0 season that can never be watched.
     insert into tvtime_seasons (show_id, season_number, name, episode_count, air_date)
     select
       p_show_id,
       (s->>'season_number')::integer,
       s->>'name',
-      (s->>'episode_count')::integer,
+      greatest(coalesce((s->>'episode_count')::integer, 0), coalesce(sec.actual_count, 0)),
       nullif(s->>'air_date', '')::date
     from jsonb_array_elements(p_seasons) as s
+    left join season_episode_counts sec on sec.season_number = (s->>'season_number')::integer
+    where greatest(coalesce((s->>'episode_count')::integer, 0), coalesce(sec.actual_count, 0)) > 0
     on conflict (show_id, season_number) do update set
       name = excluded.name,
       episode_count = excluded.episode_count,
