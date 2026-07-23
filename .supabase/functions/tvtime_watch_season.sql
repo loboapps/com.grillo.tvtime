@@ -15,7 +15,7 @@ begin
   update tvtime_episodes
   set watched = p_watched,
       watched_at = case when p_watched then now() else null end
-  where season_id = p_season_id;
+  where season_id = p_season_id and watched is distinct from p_watched;
 
   perform tvtime_update_showstatus(v_show_id, p_watched);
 end;
