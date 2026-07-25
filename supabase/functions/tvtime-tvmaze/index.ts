@@ -60,8 +60,10 @@ interface TvmazeAka {
 }
 
 interface TvmazeEpisode {
+  id: number;
   season: number;
-  number: number;
+  // null for specials — TVmaze doesn't give them a position within a season.
+  number: number | null;
   name: string;
   airdate: string;
   image: { medium: string; original: string } | null;
@@ -271,7 +273,7 @@ async function handleShow(id: number): Promise<Response> {
 }
 
 async function handleEpisodes(id: number, language?: string, imdbId?: string): Promise<Response> {
-  const res = await tvmazeFetch(`${TVMAZE_BASE}/shows/${id}/episodes`);
+  const res = await tvmazeFetch(`${TVMAZE_BASE}/shows/${id}/episodes?specials=1`);
   if (!res.ok) {
     return errorResponse(res.status === 404 ? 404 : 502, "tvmaze_episodes_failed");
   }
@@ -281,14 +283,30 @@ async function handleEpisodes(id: number, language?: string, imdbId?: string): P
     await resolveEpisodeNamesViaTmdb(imdbId, raw);
   }
 
-  const episodes = raw.map((ep) => ({
-    season_number: ep.season,
-    episode_number: ep.number,
-    name: ep.name,
-    air_date: ep.airdate || null,
-    still_path: ep.image?.original ?? null,
-    summary: ep.summary ?? null,
-  }));
+  // Specials have no season-relative episode number (TVmaze reports `number: null`,
+  // sometimes tagged onto a preceding season) — bucket them all under season 0 instead
+  // of wherever TVmaze happened to attach them, and use TVmaze's own episode `id`
+  // (globally unique, never reassigned) as the episode_number so it stays stable
+  // across syncs instead of shifting if TVmaze inserts a new special earlier in time.
+  const episodes = raw.map((ep) =>
+    ep.number === null
+      ? {
+          season_number: 0,
+          episode_number: ep.id,
+          name: ep.name,
+          air_date: ep.airdate || null,
+          still_path: ep.image?.original ?? null,
+          summary: ep.summary ?? null,
+        }
+      : {
+          season_number: ep.season,
+          episode_number: ep.number,
+          name: ep.name,
+          air_date: ep.airdate || null,
+          still_path: ep.image?.original ?? null,
+          summary: ep.summary ?? null,
+        }
+  );
   return new Response(JSON.stringify({ episodes }), {
     status: 200,
     headers: { ...corsHeaders, "Content-Type": "application/json" },

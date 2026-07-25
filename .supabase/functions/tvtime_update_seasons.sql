@@ -14,6 +14,24 @@ begin
     from jsonb_array_elements(p_episodes) as e
     group by (e->>'season_number')::integer
   ),
+  all_seasons as (
+    select
+      (s->>'season_number')::integer as season_number,
+      s->>'name' as name,
+      (s->>'episode_count')::integer as episode_count,
+      nullif(s->>'air_date', '')::date as air_date
+    from jsonb_array_elements(p_seasons) as s
+    union all
+    -- Specials are bucketed under season_number 0 by the sync source, but TVmaze's own
+    -- /seasons list never reports a "season 0" — synthesize one so those episodes have
+    -- a season row to attach to. Only when p_seasons doesn't already define one itself
+    -- (some shows do have a real season 0 in TVmaze's own listing).
+    select 0, null, 0, null
+    where not exists (
+      select 1 from jsonb_array_elements(p_seasons) as s2 where (s2->>'season_number')::integer = 0
+    )
+    and exists (select 1 from season_episode_counts where season_number = 0)
+  ),
   upserted_seasons as (
     -- A season with no reported episode order and no real episodes in this payload is an
     -- unannounced/placeholder season (e.g. TVmaze listing a future season before it has any
@@ -21,13 +39,13 @@ begin
     insert into tvtime_seasons (show_id, season_number, name, episode_count, air_date)
     select
       p_show_id,
-      (s->>'season_number')::integer,
-      s->>'name',
-      greatest(coalesce((s->>'episode_count')::integer, 0), coalesce(sec.actual_count, 0)),
-      nullif(s->>'air_date', '')::date
-    from jsonb_array_elements(p_seasons) as s
-    left join season_episode_counts sec on sec.season_number = (s->>'season_number')::integer
-    where greatest(coalesce((s->>'episode_count')::integer, 0), coalesce(sec.actual_count, 0)) > 0
+      als.season_number,
+      als.name,
+      greatest(coalesce(als.episode_count, 0), coalesce(sec.actual_count, 0)),
+      als.air_date
+    from all_seasons als
+    left join season_episode_counts sec on sec.season_number = als.season_number
+    where greatest(coalesce(als.episode_count, 0), coalesce(sec.actual_count, 0)) > 0
     on conflict (show_id, season_number) do update set
       name = excluded.name,
       episode_count = excluded.episode_count,
