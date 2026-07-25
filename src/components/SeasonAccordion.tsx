@@ -6,8 +6,13 @@ import type { SeasonAccordionProps } from '@/types/tvtime'
 export function SeasonAccordion({ season, stillPathLookup, posterPath, trackable, onToggleEpisode, onToggleSeason, onSelectEpisode }: SeasonAccordionProps) {
   const [open, setOpen] = useState(false)
   const [failedStills, setFailedStills] = useState<Set<string>>(new Set())
-  const fullyWatched = season.watched_count === season.episode_count && season.episode_count > 0
-  const progressPct = season.episode_count > 0 ? (season.watched_count / season.episode_count) * 100 : 0
+  // season.episode_count is a denormalized column that can drift behind the real episode rows
+  // (e.g. a newly-aired episode synced before the season's count was refreshed) — trust whichever
+  // is larger so a stale count never makes the season look "fully watched" (and get bulk-unwatched
+  // by the toggle button below) while a real episode is still sitting unwatched.
+  const episodeCount = Math.max(season.episode_count, season.episodes.length)
+  const fullyWatched = season.watched_count === episodeCount && episodeCount > 0
+  const progressPct = episodeCount > 0 ? (season.watched_count / episodeCount) * 100 : 0
 
   return (
     <div className="border-b border-tvtime-700">
@@ -27,7 +32,7 @@ export function SeasonAccordion({ season, stillPathLookup, posterPath, trackable
         </button>
         <span className="flex items-center gap-2 shrink-0">
           <span className="text-tvtime-300 text-sm">
-            {season.watched_count}/{season.episode_count}
+            {season.watched_count}/{episodeCount}
           </span>
           <button
             disabled={!trackable}
