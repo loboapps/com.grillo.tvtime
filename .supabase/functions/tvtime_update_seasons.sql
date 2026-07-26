@@ -52,18 +52,20 @@ begin
       air_date = excluded.air_date
     returning id, season_number
   )
-  insert into tvtime_episodes (show_id, season_id, episode_number, name, air_date)
+  insert into tvtime_episodes (show_id, season_id, episode_number, name, air_date, airstamp)
   select
     p_show_id,
     us.id,
     (e->>'episode_number')::integer,
     e->>'name',
-    nullif(e->>'air_date', '')::date
+    nullif(e->>'air_date', '')::date,
+    nullif(e->>'airstamp', '')::timestamptz
   from jsonb_array_elements(p_episodes) as e
   join upserted_seasons us on us.season_number = (e->>'season_number')::integer
   on conflict (season_id, episode_number) do update set
     name = excluded.name,
-    air_date = excluded.air_date;
+    air_date = excluded.air_date,
+    airstamp = excluded.airstamp;
 end;
 $$;
 

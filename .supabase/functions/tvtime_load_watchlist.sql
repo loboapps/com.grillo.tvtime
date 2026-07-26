@@ -40,7 +40,12 @@ next_ep as (
   left join progress pr on pr.show_id = e.show_id
   where e.watched = false
     and s.season_number != 0
-    and e.air_date is not null and e.air_date <= current_date
+    and e.air_date is not null
+    -- Gate on the full TVmaze airstamp (date + time + timezone) when we have it, so an
+    -- episode airing later tonight doesn't count as "aired" the moment the calendar date
+    -- rolls over. Only falls back to date-only comparison for rows synced before airstamp
+    -- was captured, or shows where TVmaze itself never reports a time of day.
+    and coalesce(e.airstamp <= now(), e.air_date <= current_date)
     and (p_show_id is null or e.show_id = p_show_id)
     and (pr.show_id is null or (s.season_number, e.episode_number) > (pr.season_number, pr.episode_number))
   order by
@@ -54,7 +59,8 @@ pending_counts as (
   select e.show_id, count(*) as pending
   from tvtime_episodes e
   join tvtime_seasons s on s.id = e.season_id
-  where e.watched = false and e.air_date is not null and e.air_date <= current_date
+  where e.watched = false and e.air_date is not null
+    and coalesce(e.airstamp <= now(), e.air_date <= current_date)
     and s.season_number != 0
     and (p_show_id is null or e.show_id = p_show_id)
   group by e.show_id

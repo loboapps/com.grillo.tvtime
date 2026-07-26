@@ -66,6 +66,8 @@ interface TvmazeEpisode {
   number: number | null;
   name: string;
   airdate: string;
+  // Empty string when TVmaze doesn't know the time of day for this episode yet.
+  airstamp: string;
   image: { medium: string; original: string } | null;
   summary: string | null;
 }
@@ -295,6 +297,7 @@ async function handleEpisodes(id: number, language?: string, imdbId?: string): P
           episode_number: ep.id,
           name: ep.name,
           air_date: ep.airdate || null,
+          airstamp: ep.airstamp || null,
           still_path: ep.image?.original ?? null,
           summary: ep.summary ?? null,
         }
@@ -303,6 +306,7 @@ async function handleEpisodes(id: number, language?: string, imdbId?: string): P
           episode_number: ep.number,
           name: ep.name,
           air_date: ep.airdate || null,
+          airstamp: ep.airstamp || null,
           still_path: ep.image?.original ?? null,
           summary: ep.summary ?? null,
         }

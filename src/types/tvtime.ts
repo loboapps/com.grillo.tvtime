@@ -59,6 +59,7 @@ export interface TvmazeEpisode {
   episode_number: number
   name: string
   air_date: string | null
+  airstamp: string | null
   still_path: string | null
   summary: string | null
 }

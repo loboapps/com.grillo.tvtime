@@ -5,6 +5,7 @@ create table tvtime_episodes (
   episode_number integer not null,
   name           text,
   air_date       date,
+  airstamp       timestamptz,
   watched        boolean not null default false,
   watched_at     timestamptz,
   unique (season_id, episode_number)
