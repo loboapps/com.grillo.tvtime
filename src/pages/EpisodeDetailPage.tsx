@@ -9,7 +9,9 @@ import { useToast } from '@/utils/useToast'
 import { useEpisodeWatchActions } from '@/utils/useEpisodeWatchActions'
 import { stripHtml } from '@/utils/stripHtml'
 import { formatDate } from '@/utils/formatDate'
-import type { ShowDetail, TvmazeEpisode, EpisodeDetailNavigationState } from '@/types/tvtime'
+import { ensureShowAdded } from '@/utils/ensureShowAdded'
+import { previewEpisodeId } from '@/utils/previewIds'
+import type { ShowDetail, TvmazeEpisode, TvmazeShowDetails, ShowEpisodeDetail, EpisodeDetailNavigationState } from '@/types/tvtime'
 
 function isEpisodeDetailState(value: unknown): value is EpisodeDetailNavigationState {
   if (typeof value !== 'object' || value === null) return false
@@ -39,6 +41,7 @@ export function EpisodeDetailPage() {
   const state = isEpisodeDetailState(location.state) ? location.state : null
 
   const [detail, setDetail] = useState<ShowDetail | null>(null)
+  const [tvmazeDetails, setTvmazeDetails] = useState<TvmazeShowDetails | null>(null)
   const [liveEpisode, setLiveEpisode] = useState<(TvmazeEpisode & { season_number: number }) | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -66,12 +69,14 @@ export function EpisodeDetailPage() {
     async function load() {
       try {
         setLoading(true)
-        const [showDetail, episodes] = await Promise.all([
+        const [showDetail, liveDetails, episodes] = await Promise.all([
           tvtimeService.loadShow(state!.tvmazeId),
+          tvtimeService.getShowDetails(state!.tvmazeId),
           tvtimeService.fetchEpisodes(state!.tvmazeId),
         ])
         if (cancelled) return
         setDetail(showDetail)
+        setTvmazeDetails(liveDetails)
         setLiveEpisode(
           episodes.find(
             (e) => e.season_number === state!.seasonNumber && e.episode_number === state!.episodeNumber,
@@ -92,8 +97,16 @@ export function EpisodeDetailPage() {
     }
   }, [state, navigate])
 
+  const ensureAdded = useCallback(async () => {
+    if (detail) return detail.seasons
+    if (!state || !tvmazeDetails) throw new Error('Show details not loaded yet')
+    const newDetail = await ensureShowAdded(state.tvmazeId, tvmazeDetails)
+    setDetail(newDetail)
+    return newDetail.seasons
+  }, [detail, tvmazeDetails, state])
+
   const { pendingMark, cancelPendingMark, handleToggleEpisode, handleMarkJustThis, handleMarkAllPrevious } =
-    useEpisodeWatchActions(detail?.seasons, refresh, showToast)
+    useEpisodeWatchActions(detail?.seasons, refresh, showToast, ensureAdded)
 
   if (!state) {
     return null
@@ -104,9 +117,24 @@ export function EpisodeDetailPage() {
   }
 
   const season = detail?.seasons.find((s) => s.season_number === state.seasonNumber)
-  const episode = season?.episodes.find((e) => e.episode_number === state.episodeNumber)
+  // Show hasn't been added yet — fall back to a preview episode built from the
+  // live TVmaze data so it can still be viewed and (via handleToggleEpisode's
+  // add-then-watch flow) marked watched.
+  const previewEpisode: ShowEpisodeDetail | null =
+    !detail && liveEpisode
+      ? {
+          episode_id: previewEpisodeId(state.seasonNumber, state.episodeNumber),
+          episode_number: state.episodeNumber,
+          name: liveEpisode.name,
+          air_date: liveEpisode.air_date,
+          watched: false,
+          watched_at: null,
+        }
+      : null
+  const episode = season?.episodes.find((e) => e.episode_number === state.episodeNumber) ?? previewEpisode
+  const posterPath = detail?.poster_path ?? tvmazeDetails?.poster_path ?? null
 
-  if (error || !detail || !season || !episode) {
+  if (error || !episode) {
     return (
       <div className="min-h-screen bg-tvtime-900 flex flex-col items-center justify-center px-6 text-center">
         <p className="text-tvtime-100 font-semibold mb-2">Something went wrong</p>
@@ -136,8 +164,8 @@ export function EpisodeDetailPage() {
             onError={() => setFailedStill(true)}
           />
         ) : (
-          detail.poster_path && (
-            <img src={detail.poster_path} alt="" className="w-full h-48 object-cover opacity-50" />
+          posterPath && (
+            <img src={posterPath} alt="" className="w-full h-48 object-cover opacity-50" />
           )
         )}
         <button
@@ -167,14 +195,14 @@ export function EpisodeDetailPage() {
 
         <div className="bg-tvtime-800 rounded-lg p-4 flex items-center justify-between">
           <span className="text-tvtime-300 text-sm font-semibold">
-            S{season.season_number} | E{episode.episode_number}
+            S{state.seasonNumber} | E{episode.episode_number}
           </span>
           <button
             onClick={() =>
               handleToggleEpisode(
                 episode.episode_id,
                 episode.watched,
-                season.season_number,
+                state.seasonNumber,
                 episode.episode_number,
               )
             }

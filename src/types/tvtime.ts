@@ -149,9 +149,8 @@ export interface SeasonAccordionProps {
   season: ShowSeasonDetail
   stillPathLookup: Record<string, string | null>
   posterPath: string | null
-  trackable: boolean
   onToggleEpisode: (episodeId: string, currentlyWatched: boolean, seasonNumber: number, episodeNumber: number) => void
-  onToggleSeason: (seasonId: string, currentlyFullyWatched: boolean) => void
+  onToggleSeason: (seasonId: string, currentlyFullyWatched: boolean, seasonNumber: number) => void
   onSelectEpisode: (seasonNumber: number, episodeNumber: number) => void
 }
 

@@ -3,7 +3,7 @@ import { icons } from '@/utils/icons'
 import { formatDate } from '@/utils/formatDate'
 import type { SeasonAccordionProps } from '@/types/tvtime'
 
-export function SeasonAccordion({ season, stillPathLookup, posterPath, trackable, onToggleEpisode, onToggleSeason, onSelectEpisode }: SeasonAccordionProps) {
+export function SeasonAccordion({ season, stillPathLookup, posterPath, onToggleEpisode, onToggleSeason, onSelectEpisode }: SeasonAccordionProps) {
   const [open, setOpen] = useState(false)
   const [failedStills, setFailedStills] = useState<Set<string>>(new Set())
   // season.episode_count is a denormalized column that can drift behind the real episode rows
@@ -35,11 +35,10 @@ export function SeasonAccordion({ season, stillPathLookup, posterPath, trackable
             {season.watched_count}/{episodeCount}
           </span>
           <button
-            disabled={!trackable}
-            onClick={() => onToggleSeason(season.season_id, fullyWatched)}
+            onClick={() => onToggleSeason(season.season_id, fullyWatched, season.season_number)}
             className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
               fullyWatched ? 'bg-yellow-500' : 'bg-tvtime-700'
-            } disabled:opacity-40`}
+            }`}
           >
             <icons.check size={16} className={fullyWatched ? 'text-tvtime-900' : 'text-tvtime-400'} />
           </button>
@@ -94,14 +93,13 @@ export function SeasonAccordion({ season, stillPathLookup, posterPath, trackable
                   )}
                 </div>
                 <button
-                  disabled={!trackable}
                   onClick={(e) => {
                     e.stopPropagation()
                     onToggleEpisode(episode.episode_id, episode.watched, season.season_number, episode.episode_number)
                   }}
                   className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
                     episode.watched ? 'bg-yellow-500' : 'bg-tvtime-700'
-                  } disabled:opacity-40`}
+                  }`}
                 >
                   <icons.check size={16} className={episode.watched ? 'text-tvtime-900' : 'text-tvtime-400'} />
                 </button>

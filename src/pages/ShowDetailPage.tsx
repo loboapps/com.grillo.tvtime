@@ -10,7 +10,9 @@ import { MarkWatchedModal } from '@/components/MarkWatchedModal'
 import { useToast } from '@/utils/useToast'
 import { useEpisodeWatchActions } from '@/utils/useEpisodeWatchActions'
 import { computeNextAirDate } from '@/utils/computeNextAirDate'
-import type { ShowDetail, TvmazeShowDetails } from '@/types/tvtime'
+import { ensureShowAdded } from '@/utils/ensureShowAdded'
+import { previewSeasonId, previewEpisodeId } from '@/utils/previewIds'
+import type { ShowDetail, TvmazeShowDetails, TvmazeEpisode, ShowEpisodeDetail } from '@/types/tvtime'
 
 function ShowDetailSkeleton() {
   return (
@@ -37,6 +39,7 @@ export function ShowDetailPage() {
 
   const [detail, setDetail] = useState<ShowDetail | null>(null)
   const [tvmazeDetails, setTvmazeDetails] = useState<TvmazeShowDetails | null>(null)
+  const [episodes, setEpisodes] = useState<(TvmazeEpisode & { season_number: number })[]>([])
   const [stillPathLookup, setStillPathLookup] = useState<Record<string, string | null>>({})
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -74,6 +77,7 @@ export function ShowDetailPage() {
       const episodes = await tvtimeService.fetchEpisodes(id, liveDetails.language, liveDetails.imdb_id)
       setDetail(showDetail)
       setTvmazeDetails(liveDetails)
+      setEpisodes(episodes)
       setStillPathLookup(buildStillPathLookup(episodes))
       setError(null)
 
@@ -114,14 +118,20 @@ export function ShowDetailPage() {
     load()
   }, [load])
 
+  const ensureAdded = useCallback(async () => {
+    if (detail) return detail.seasons
+    if (!tvmazeDetails) throw new Error('Show details not loaded yet')
+    const newDetail = await ensureShowAdded(id, tvmazeDetails)
+    setDetail(newDetail)
+    return newDetail.seasons
+  }, [detail, tvmazeDetails, id])
+
   const { pendingMark, cancelPendingMark, handleToggleEpisode, handleMarkJustThis, handleMarkAllPrevious, handleToggleSeason } =
-    useEpisodeWatchActions(detail?.seasons, refreshDetail, showToast)
+    useEpisodeWatchActions(detail?.seasons, refreshDetail, showToast, ensureAdded)
 
   async function handleAdd() {
-    if (!tvmazeDetails) return
     try {
-      await tvtimeWriteService.addShowFromDetails(tvmazeDetails)
-      await refreshDetail()
+      await ensureAdded()
     } catch (err) {
       console.error(err)
       showToast("Couldn't add this show.")
@@ -250,7 +260,6 @@ export function ShowDetailPage() {
               season={season}
               stillPathLookup={stillPathLookup}
               posterPath={detail.poster_path}
-              trackable
               onToggleEpisode={handleToggleEpisode}
               onToggleSeason={handleToggleSeason}
               onSelectEpisode={(seasonNumber, episodeNumber) =>
@@ -258,26 +267,39 @@ export function ShowDetailPage() {
               }
             />
           ))
-        : tvmazeDetails.seasons.map((season) => (
-            <SeasonAccordion
-              key={season.season_number}
-              season={{
-                season_id: `preview-${season.season_number}`,
-                season_number: season.season_number,
-                name: season.name,
-                user_status: null,
-                episode_count: season.episode_count,
-                watched_count: 0,
-                episodes: [],
-              }}
-              stillPathLookup={stillPathLookup}
-              posterPath={tvmazeDetails.poster_path}
-              trackable={false}
-              onToggleEpisode={() => {}}
-              onToggleSeason={() => {}}
-              onSelectEpisode={() => {}}
-            />
-          ))}
+        : tvmazeDetails.seasons.map((season) => {
+            const seasonEpisodes: ShowEpisodeDetail[] = episodes
+              .filter((e) => e.season_number === season.season_number)
+              .map((e) => ({
+                episode_id: previewEpisodeId(season.season_number, e.episode_number),
+                episode_number: e.episode_number,
+                name: e.name,
+                air_date: e.air_date,
+                watched: false,
+                watched_at: null,
+              }))
+            return (
+              <SeasonAccordion
+                key={season.season_number}
+                season={{
+                  season_id: previewSeasonId(season.season_number),
+                  season_number: season.season_number,
+                  name: season.name,
+                  user_status: null,
+                  episode_count: season.episode_count,
+                  watched_count: 0,
+                  episodes: seasonEpisodes,
+                }}
+                stillPathLookup={stillPathLookup}
+                posterPath={tvmazeDetails.poster_path}
+                onToggleEpisode={handleToggleEpisode}
+                onToggleSeason={handleToggleSeason}
+                onSelectEpisode={(seasonNumber, episodeNumber) =>
+                  navigate('/episode-detail', { state: { tvmazeId: id, seasonNumber, episodeNumber } })
+                }
+              />
+            )
+          })}
 
       {pendingMark && (
         <MarkWatchedModal
