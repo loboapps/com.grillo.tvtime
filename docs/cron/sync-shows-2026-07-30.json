@@ -1,14 +1,18 @@
 {
-  "date": "2026-07-23",
-  "timestamp": "2026-07-23T08:11:39.902Z",
+  "date": "2026-07-30",
+  "timestamp": "2026-07-30T08:15:10.468Z",
   "totals": {
-    "tracked": 570,
+    "tracked": 571,
     "unchanged": 523,
     "updated": 0,
-    "failed": 47
+    "failed": 48
   },
   "updated": [],
   "failed": [
+    {
+      "tvmaze_id": 82,
+      "error": "permission denied for function tvtime_update_seasons"
+    },
     {
       "tvmaze_id": 532,
       "error": "permission denied for function tvtime_update_seasons"
@@ -106,10 +110,6 @@
       "error": "permission denied for function tvtime_update_seasons"
     },
     {
-      "tvmaze_id": 694,
-      "error": "permission denied for function tvtime_update_seasons"
-    },
-    {
       "tvmaze_id": 29,
       "error": "permission denied for function tvtime_update_seasons"
     },
@@ -123,6 +123,10 @@
     },
     {
       "tvmaze_id": 23451,
+      "error": "permission denied for function tvtime_update_seasons"
+    },
+    {
+      "tvmaze_id": 694,
       "error": "permission denied for function tvtime_update_seasons"
     },
     {
@@ -150,15 +154,15 @@
       "error": "permission denied for function tvtime_update_seasons"
     },
     {
+      "tvmaze_id": 68696,
+      "error": "permission denied for function tvtime_update_seasons"
+    },
+    {
       "tvmaze_id": 158,
       "error": "permission denied for function tvtime_update_seasons"
     },
     {
       "tvmaze_id": 171,
-      "error": "permission denied for function tvtime_update_seasons"
-    },
-    {
-      "tvmaze_id": 30,
       "error": "permission denied for function tvtime_update_seasons"
     },
     {
@@ -171,6 +175,10 @@
     },
     {
       "tvmaze_id": 5067,
+      "error": "permission denied for function tvtime_update_seasons"
+    },
+    {
+      "tvmaze_id": 30,
       "error": "permission denied for function tvtime_update_seasons"
     },
     {
@@ -191,10 +199,6 @@
     },
     {
       "tvmaze_id": 3144,
-      "error": "permission denied for function tvtime_update_seasons"
-    },
-    {
-      "tvmaze_id": 57698,
       "error": "permission denied for function tvtime_update_seasons"
     }
   ]
