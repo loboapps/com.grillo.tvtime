@@ -5,9 +5,12 @@ import { AuthProvider } from '@/contexts/AuthContext'
 import App from './App'
 import './index.css'
 
+// Actively unregister any service worker left over from when this app was a PWA —
+// it only ever did a bare fetch passthrough with no error handling, which turned
+// ordinary transient network hiccups into broken page loads.
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js')
+  navigator.serviceWorker.getRegistrations().then((registrations) => {
+    registrations.forEach((registration) => registration.unregister())
   })
 }
 
