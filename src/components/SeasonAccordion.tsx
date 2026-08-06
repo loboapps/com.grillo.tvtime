@@ -21,9 +21,9 @@ export function SeasonAccordion({ season, stillPathLookup, posterPath, onToggleE
           onClick={() => setOpen((prev) => !prev)}
           className="flex-1 flex items-center gap-2 text-left min-w-0"
         >
-          <icons.chevronDown
+          <icons.chevronRight
             size={16}
-            className={`text-tvtime-300 shrink-0 transition-transform ${open ? 'rotate-180' : ''}`}
+            className={`text-tvtime-300 shrink-0 transition-transform ${open ? 'rotate-90' : ''}`}
           />
           <span className="text-tvtime-100 font-semibold truncate">
             Season {season.season_number}
@@ -89,6 +89,12 @@ export function SeasonAccordion({ season, stillPathLookup, posterPath, onToggleE
                     <p className="text-tvtime-300 text-xs flex items-center gap-1">
                       <icons.eye size={12} />
                       {formatDate(episode.watched_at)}
+                    </p>
+                  )}
+                  {!episode.watched && episode.air_date && (
+                    <p className="text-tvtime-300 text-xs flex items-center gap-1">
+                      <icons.tv size={12} />
+                      {formatDate(episode.air_date)}
                     </p>
                   )}
                 </div>
