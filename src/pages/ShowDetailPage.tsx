@@ -256,7 +256,7 @@ export function ShowDetailPage() {
       {detail
         ? detail.seasons.map((season) => (
             <SeasonAccordion
-              key={season.season_id}
+              key={season.season_number}
               season={season}
               stillPathLookup={stillPathLookup}
               posterPath={detail.poster_path}
