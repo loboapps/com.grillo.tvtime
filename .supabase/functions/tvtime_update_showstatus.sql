@@ -10,8 +10,10 @@ as $$
 declare
   v_remaining integer;
 begin
-  -- Marking any episode watched on a dropped show means you're back — un-drop it. There's no
-  -- other way to "undrop" today (no UI for it yet), so this is the only path back to watching.
+  -- Marking any episode watched on a dropped show means you're back — un-drop it. A manual
+  -- "Resume Watching" UI now also exists (tvtime_set_show_status), but this auto-undrop stays
+  -- as a second path back to watching, by design (decided 2026-08-10): dropping is a soft
+  -- pause, not a lock, so any sign of watching activity should clear it too.
   if p_watched then
     update tvtime_shows set user_status = 'watching'
     where id = p_show_id and user_status = 'dropped';
