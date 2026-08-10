@@ -160,6 +160,13 @@ export interface MarkWatchedModalProps {
   onCancel: () => void
 }
 
+export interface ShowOptionsMenuProps {
+  isDropped: boolean
+  onRefresh: () => void
+  onToggleDropped: () => void
+  onCancel: () => void
+}
+
 export interface ToastProps {
   message: string
   variant: 'error' | 'success'
