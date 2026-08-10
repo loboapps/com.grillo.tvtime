@@ -177,6 +177,7 @@ export function ShowDetailPage() {
     try {
       if (nextStatus === 'dropped' && totalWatched === 0) {
         await tvtimeWriteService.removeShow(detail.show_id)
+        setDetail(null)
         navigate(-1)
         return
       }
