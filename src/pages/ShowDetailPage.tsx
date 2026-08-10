@@ -7,6 +7,7 @@ import { SeasonAccordion } from '@/components/SeasonAccordion'
 import { Toast } from '@/components/Toast'
 import { Skeleton } from '@/components/Skeleton'
 import { MarkWatchedModal } from '@/components/MarkWatchedModal'
+import { ShowOptionsMenu } from '@/components/ShowOptionsMenu'
 import { useToast } from '@/utils/useToast'
 import { useEpisodeWatchActions } from '@/utils/useEpisodeWatchActions'
 import { computeNextAirDate } from '@/utils/computeNextAirDate'
@@ -44,6 +45,7 @@ export function ShowDetailPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [refreshing, setRefreshing] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
   const { toast, showToast } = useToast()
 
   const notFound = Number.isNaN(id)
@@ -168,6 +170,18 @@ export function ShowDetailPage() {
     }
   }
 
+  async function handleToggleDropped() {
+    if (!detail) return
+    const nextStatus = detail.user_status === 'dropped' ? 'watching' : 'dropped'
+    try {
+      await tvtimeWriteService.setShowStatus(detail.show_id, nextStatus)
+      await refreshDetail()
+    } catch (err) {
+      console.error(err)
+      showToast("Couldn't update this show.")
+    }
+  }
+
   if (notFound) {
     return (
       <div className="min-h-screen bg-tvtime-900 flex flex-col items-center justify-center px-6 text-center">
@@ -218,14 +232,25 @@ export function ShowDetailPage() {
           <icons.back size={24} className="text-tvtime-100" />
         </button>
         {detail && (
-          <button
-            onClick={handleRefresh}
-            disabled={refreshing}
-            aria-label="Refresh show data"
-            className="absolute top-4 right-4 bg-tvtime-900/70 rounded-full p-1"
-          >
-            <icons.refresh size={24} className={`text-tvtime-100 ${refreshing ? 'animate-spin' : ''}`} />
-          </button>
+          <div className="absolute top-4 right-4 flex items-center gap-2">
+            {detail.user_status === 'dropped' && (
+              <span className="bg-red-600 text-white rounded-full px-3 py-1 text-xs font-semibold">
+                Not Watching
+              </span>
+            )}
+            <button
+              onClick={() => setMenuOpen(true)}
+              disabled={refreshing}
+              aria-label="Show options"
+              className="bg-tvtime-900/70 rounded-full p-1"
+            >
+              {refreshing ? (
+                <icons.refresh size={24} className="text-tvtime-100 animate-spin" />
+              ) : (
+                <icons.moreVertical size={24} className="text-tvtime-100" />
+              )}
+            </button>
+          </div>
         )}
       </div>
 
@@ -306,6 +331,20 @@ export function ShowDetailPage() {
           onCancel={cancelPendingMark}
           onMarkJustThis={handleMarkJustThis}
           onMarkAllPrevious={handleMarkAllPrevious}
+        />
+      )}
+      {menuOpen && (
+        <ShowOptionsMenu
+          isDropped={detail?.user_status === 'dropped'}
+          onRefresh={() => {
+            setMenuOpen(false)
+            handleRefresh()
+          }}
+          onToggleDropped={() => {
+            setMenuOpen(false)
+            handleToggleDropped()
+          }}
+          onCancel={() => setMenuOpen(false)}
         />
       )}
       {toast && <Toast message={toast.message} variant={toast.variant} />}
