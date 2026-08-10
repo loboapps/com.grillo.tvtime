@@ -174,4 +174,12 @@ export const tvtimeWriteService = {
     })
     if (error) throw error
   },
+
+  async setShowStatus(showId: string, status: ShowStatus): Promise<void> {
+    const { error } = await supabase.rpc('tvtime_set_show_status', {
+      p_show_id: showId,
+      p_status: status,
+    })
+    if (error) throw error
+  },
 }
