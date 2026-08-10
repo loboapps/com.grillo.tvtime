@@ -49,6 +49,7 @@ export function ShowDetailPage() {
   const { toast, showToast } = useToast()
 
   const notFound = Number.isNaN(id)
+  const totalWatched = detail?.seasons.reduce((sum, s) => sum + s.watched_count, 0) ?? 0
 
   // Refreshes only our DB-tracked state (seasons/episodes/watched flags), not the
   // live TVmaze fetch or the loading gate — a full load() here would unmount
@@ -174,6 +175,11 @@ export function ShowDetailPage() {
     if (!detail) return
     const nextStatus = detail.user_status === 'dropped' ? 'watching' : 'dropped'
     try {
+      if (nextStatus === 'dropped' && totalWatched === 0) {
+        await tvtimeWriteService.removeShow(detail.show_id)
+        navigate(-1)
+        return
+      }
       await tvtimeWriteService.setShowStatus(detail.show_id, nextStatus)
       await refreshDetail()
     } catch (err) {
@@ -218,7 +224,6 @@ export function ShowDetailPage() {
   const backdropUrl = tvmazeDetails.backdrop_path
   const network = tvmazeDetails.networks[0]?.name
   const totalEpisodes = detail?.seasons.reduce((sum, s) => sum + s.episode_count, 0) ?? 0
-  const totalWatched = detail?.seasons.reduce((sum, s) => sum + s.watched_count, 0) ?? 0
   const overallProgressPct = totalEpisodes > 0 ? (totalWatched / totalEpisodes) * 100 : 0
 
   return (

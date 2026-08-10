@@ -182,4 +182,11 @@ export const tvtimeWriteService = {
     })
     if (error) throw error
   },
+
+  async removeShow(showId: string): Promise<void> {
+    const { error } = await supabase.rpc('tvtime_remove_show', {
+      p_show_id: showId,
+    })
+    if (error) throw error
+  },
 }
