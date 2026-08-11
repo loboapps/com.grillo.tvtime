@@ -1,11 +1,11 @@
 {
-  "date": "2026-08-04",
-  "timestamp": "2026-08-04T08:22:39.714Z",
+  "date": "2026-08-11",
+  "timestamp": "2026-08-11T06:49:29.159Z",
   "totals": {
-    "tracked": 573,
-    "unchanged": 515,
+    "tracked": 572,
+    "unchanged": 525,
     "updated": 0,
-    "failed": 58
+    "failed": 47
   },
   "updated": [],
   "failed": [
@@ -86,63 +86,19 @@
       "error": "permission denied for function tvtime_update_seasons"
     },
     {
-      "tvmaze_id": 7626,
-      "error": "Edge Function returned a non-2xx status code"
-    },
-    {
-      "tvmaze_id": 34857,
-      "error": "Edge Function returned a non-2xx status code"
-    },
-    {
-      "tvmaze_id": 6,
-      "error": "Edge Function returned a non-2xx status code"
-    },
-    {
-      "tvmaze_id": 127,
-      "error": "Edge Function returned a non-2xx status code"
-    },
-    {
       "tvmaze_id": 458,
-      "error": "Edge Function returned a non-2xx status code"
-    },
-    {
-      "tvmaze_id": 37130,
-      "error": "Edge Function returned a non-2xx status code"
-    },
-    {
-      "tvmaze_id": 149,
-      "error": "Edge Function returned a non-2xx status code"
+      "error": "permission denied for function tvtime_update_seasons"
     },
     {
       "tvmaze_id": 270,
-      "error": "Edge Function returned a non-2xx status code"
+      "error": "permission denied for function tvtime_update_seasons"
     },
     {
       "tvmaze_id": 13645,
       "error": "permission denied for function tvtime_update_seasons"
     },
     {
-      "tvmaze_id": 34526,
-      "error": "Edge Function returned a non-2xx status code"
-    },
-    {
-      "tvmaze_id": 1744,
-      "error": "Edge Function returned a non-2xx status code"
-    },
-    {
-      "tvmaze_id": 41749,
-      "error": "Edge Function returned a non-2xx status code"
-    },
-    {
       "tvmaze_id": 20,
-      "error": "Edge Function returned a non-2xx status code"
-    },
-    {
-      "tvmaze_id": 52341,
-      "error": "Edge Function returned a non-2xx status code"
-    },
-    {
-      "tvmaze_id": 694,
       "error": "permission denied for function tvtime_update_seasons"
     },
     {
