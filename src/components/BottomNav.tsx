@@ -3,6 +3,7 @@ import { icons } from '@/utils/icons'
 
 const ITEMS = [
   { to: '/', label: 'Shows', Icon: icons.shows },
+  { to: '/schedule', label: 'Schedule', Icon: icons.calendar },
   { to: '/search', label: 'Search', Icon: icons.search },
 ]
 

@@ -2,6 +2,7 @@ import { supabase } from '@/lib/supabaseClient'
 import { computeNextAirDate } from '@/utils/computeNextAirDate'
 import type {
   AddShowInput,
+  ScheduleEntry,
   ShowDetail,
   ShowStatus,
   TvmazeSearchResult,
@@ -24,6 +25,12 @@ export const tvtimeService = {
     const { data, error } = await supabase.rpc('tvtime_load_watchlist', { p_show_id: showId ?? null })
     if (error) throw error
     return data as Watchlist
+  },
+
+  async loadSchedule(): Promise<ScheduleEntry[]> {
+    const { data, error } = await supabase.rpc('tvtime_load_schedule')
+    if (error) throw error
+    return data as ScheduleEntry[]
   },
 
   async loadShow(tvmazeId: number): Promise<ShowDetail | null> {

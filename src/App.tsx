@@ -3,6 +3,7 @@ import { PrivateRoute } from '@/components/PrivateRoute'
 import { BottomNav } from '@/components/BottomNav'
 import { LoginPage } from '@/pages/LoginPage'
 import { WatchListPage } from '@/pages/WatchListPage'
+import { SchedulePage } from '@/pages/SchedulePage'
 import { SearchPage } from '@/pages/SearchPage'
 import { ShowDetailPage } from '@/pages/ShowDetailPage'
 import { EpisodeDetailPage } from '@/pages/EpisodeDetailPage'
@@ -20,6 +21,14 @@ export default function App() {
           element={
             <PrivateRoute>
               <WatchListPage />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/schedule"
+          element={
+            <PrivateRoute>
+              <SchedulePage />
             </PrivateRoute>
           }
         />

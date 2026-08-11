@@ -26,6 +26,19 @@ export interface Watchlist {
   want_to_see: WatchlistEntry[]
 }
 
+export interface ScheduleEntry {
+  episode_id: string
+  show_id: string
+  tvmaze_id: number
+  name: string
+  poster_path: string | null
+  season_number: number
+  episode_number: number
+  episode_name: string | null
+  air_date: string
+  airstamp: string | null
+}
+
 export interface TvmazeSearchResult {
   id: number
   name: string
@@ -107,6 +120,13 @@ export interface ShowRowProps {
   // episode, but ShowRow doesn't need to wait for that; it just stays showing
   // the confirmation banner until the parent replaces it.
   onWatched: (entry: WatchlistEntry) => void
+}
+
+export interface ScheduleRowProps {
+  entry: ScheduleEntry
+  // This group's list spans multiple days (This Month / In the Future), so
+  // the row also shows a short date next to the time, not just the time.
+  showDate: boolean
 }
 
 export interface ShowEpisodeDetail {
