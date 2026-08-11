@@ -1,12 +1,27 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { Link } from 'react-router-dom'
+import PullToRefresh from 'react-simple-pull-to-refresh'
 import { ShowRow } from '@/components/ShowRow'
 import { Toast } from '@/components/Toast'
 import { Skeleton } from '@/components/Skeleton'
 import { useToast } from '@/utils/useToast'
+import { icons } from '@/utils/icons'
 import { tvtimeService, tvtimeWriteService } from '@/services/tvtimeService'
 import { computeNextAirDate } from '@/utils/computeNextAirDate'
 import type { Watchlist, WatchlistEntry } from '@/types/tvtime'
+
+// Matches --color-tvtime-900 in src/index.css — the page background color,
+// passed as a raw CSS color since PullToRefresh's `backgroundColor` prop
+// doesn't accept Tailwind classes.
+const TVTIME_900 = '#000000'
+
+function PullToRefreshIndicator() {
+  return (
+    <div className="flex justify-center py-3">
+      <icons.spinner size={20} className="animate-spin text-tvtime-100" />
+    </div>
+  )
+}
 
 // How long the row's "Watched" confirmation banner stays up before the row
 // swaps to the show's next episode (or disappears, if that was the last one).
@@ -227,46 +242,60 @@ export function WatchListPage() {
 
   if (isEmpty) {
     return (
-      <div className="min-h-screen bg-tvtime-900 pb-20 flex flex-col items-center justify-center px-6 text-center">
-        <p className="text-tvtime-100 font-semibold mb-2">No shows yet</p>
-        <p className="text-tvtime-300 text-sm mb-6">Add shows you're watching or want to watch.</p>
-        <Link to="/search" className="bg-tvtime-100 text-tvtime-900 rounded-full px-4 py-2 text-sm font-semibold">
-          Add show
-        </Link>
-      </div>
+      <PullToRefresh
+        onRefresh={load}
+        backgroundColor={TVTIME_900}
+        pullingContent={<PullToRefreshIndicator />}
+        refreshingContent={<PullToRefreshIndicator />}
+      >
+        <div className="min-h-screen bg-tvtime-900 pb-20 flex flex-col items-center justify-center px-6 text-center">
+          <p className="text-tvtime-100 font-semibold mb-2">No shows yet</p>
+          <p className="text-tvtime-300 text-sm mb-6">Add shows you're watching or want to watch.</p>
+          <Link to="/search" className="bg-tvtime-100 text-tvtime-900 rounded-full px-4 py-2 text-sm font-semibold">
+            Add show
+          </Link>
+        </div>
+      </PullToRefresh>
     )
   }
 
   const sections: (keyof Watchlist)[] = ['watch_next', 'not_seen_in_a_while', 'want_to_see']
 
   return (
-    <div className="min-h-screen bg-tvtime-900 pb-20">
-      <div className="sticky top-0 z-10 bg-tvtime-900 py-3 flex justify-center">
-        <span className="bg-tvtime-600 text-tvtime-100 text-sm font-bold uppercase tracking-wide px-5 py-2.5 rounded-full">
-          {SECTION_LABELS[currentSection]}
-        </span>
+    <PullToRefresh
+      onRefresh={load}
+      backgroundColor={TVTIME_900}
+      pullingContent={<PullToRefreshIndicator />}
+      refreshingContent={<PullToRefreshIndicator />}
+    >
+      <div className="min-h-screen bg-tvtime-900 pb-20">
+        <div className="sticky top-0 z-10 bg-tvtime-900 py-3 flex justify-center">
+          <span className="bg-tvtime-600 text-tvtime-100 text-sm font-bold uppercase tracking-wide px-5 py-2.5 rounded-full">
+            {SECTION_LABELS[currentSection]}
+          </span>
+        </div>
+        {sections.map((key, index) => (
+          <section
+            key={key}
+            data-section={key}
+            ref={(el) => {
+              sectionRefs.current[key] = el
+            }}
+          >
+            {index > 0 && watchlist[key].length > 0 && (
+              <div className="py-3 flex justify-center">
+                <span className="bg-tvtime-600 text-tvtime-100 text-sm font-bold uppercase tracking-wide px-5 py-2.5 rounded-full">
+                  {SECTION_LABELS[key]}
+                </span>
+              </div>
+            )}
+            {watchlist[key].map((entry) => (
+              <ShowRow key={entry.episode_id} entry={entry} onWatch={handleWatch} onWatched={handleWatched} />
+            ))}
+          </section>
+        ))}
+        {toast && <Toast message={toast.message} variant={toast.variant} />}
       </div>
-      {sections.map((key, index) => (
-        <section
-          key={key}
-          data-section={key}
-          ref={(el) => {
-            sectionRefs.current[key] = el
-          }}
-        >
-          {index > 0 && watchlist[key].length > 0 && (
-            <div className="py-3 flex justify-center">
-              <span className="bg-tvtime-600 text-tvtime-100 text-sm font-bold uppercase tracking-wide px-5 py-2.5 rounded-full">
-                {SECTION_LABELS[key]}
-              </span>
-            </div>
-          )}
-          {watchlist[key].map((entry) => (
-            <ShowRow key={entry.episode_id} entry={entry} onWatch={handleWatch} onWatched={handleWatched} />
-          ))}
-        </section>
-      ))}
-      {toast && <Toast message={toast.message} variant={toast.variant} />}
-    </div>
+    </PullToRefresh>
   )
 }
