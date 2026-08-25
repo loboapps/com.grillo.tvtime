@@ -1,11 +1,11 @@
 {
-  "date": "2026-08-18",
-  "timestamp": "2026-08-18T06:16:20.825Z",
+  "date": "2026-08-25",
+  "timestamp": "2026-08-25T06:19:09.660Z",
   "totals": {
-    "tracked": 573,
-    "unchanged": 525,
+    "tracked": 574,
+    "unchanged": 512,
     "updated": 0,
-    "failed": 48
+    "failed": 62
   },
   "updated": [],
   "failed": [
@@ -146,6 +146,10 @@
       "error": "permission denied for function tvtime_update_seasons"
     },
     {
+      "tvmaze_id": 58951,
+      "error": "permission denied for function tvtime_update_seasons"
+    },
+    {
       "tvmaze_id": 820,
       "error": "permission denied for function tvtime_update_seasons"
     },
@@ -174,10 +178,6 @@
       "error": "permission denied for function tvtime_update_seasons"
     },
     {
-      "tvmaze_id": 61324,
-      "error": "permission denied for function tvtime_update_seasons"
-    },
-    {
       "tvmaze_id": 30,
       "error": "permission denied for function tvtime_update_seasons"
     },
@@ -190,8 +190,64 @@
       "error": "permission denied for function tvtime_update_seasons"
     },
     {
+      "tvmaze_id": 49906,
+      "error": "Edge Function returned a non-2xx status code"
+    },
+    {
+      "tvmaze_id": 82961,
+      "error": "Edge Function returned a non-2xx status code"
+    },
+    {
+      "tvmaze_id": 79084,
+      "error": "Edge Function returned a non-2xx status code"
+    },
+    {
+      "tvmaze_id": 700,
+      "error": "Edge Function returned a non-2xx status code"
+    },
+    {
       "tvmaze_id": 32,
-      "error": "permission denied for function tvtime_update_seasons"
+      "error": "Edge Function returned a non-2xx status code"
+    },
+    {
+      "tvmaze_id": 14157,
+      "error": "Edge Function returned a non-2xx status code"
+    },
+    {
+      "tvmaze_id": 7989,
+      "error": "Edge Function returned a non-2xx status code"
+    },
+    {
+      "tvmaze_id": 212,
+      "error": "Edge Function returned a non-2xx status code"
+    },
+    {
+      "tvmaze_id": 2705,
+      "error": "Edge Function returned a non-2xx status code"
+    },
+    {
+      "tvmaze_id": 1413,
+      "error": "Edge Function returned a non-2xx status code"
+    },
+    {
+      "tvmaze_id": 620,
+      "error": "Edge Function returned a non-2xx status code"
+    },
+    {
+      "tvmaze_id": 82373,
+      "error": "Edge Function returned a non-2xx status code"
+    },
+    {
+      "tvmaze_id": 3321,
+      "error": "Edge Function returned a non-2xx status code"
+    },
+    {
+      "tvmaze_id": 60090,
+      "error": "Edge Function returned a non-2xx status code"
+    },
+    {
+      "tvmaze_id": 38269,
+      "error": "Edge Function returned a non-2xx status code"
     },
     {
       "tvmaze_id": 42846,
