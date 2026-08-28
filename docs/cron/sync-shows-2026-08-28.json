@@ -1,11 +1,11 @@
 {
-  "date": "2026-08-21",
-  "timestamp": "2026-08-21T06:14:36.558Z",
+  "date": "2026-08-28",
+  "timestamp": "2026-08-28T17:58:55.868Z",
   "totals": {
-    "tracked": 573,
+    "tracked": 574,
     "unchanged": 526,
     "updated": 0,
-    "failed": 47
+    "failed": 48
   },
   "updated": [],
   "failed": [
@@ -195,6 +195,10 @@
     },
     {
       "tvmaze_id": 3144,
+      "error": "permission denied for function tvtime_update_seasons"
+    },
+    {
+      "tvmaze_id": 77055,
       "error": "permission denied for function tvtime_update_seasons"
     }
   ]
