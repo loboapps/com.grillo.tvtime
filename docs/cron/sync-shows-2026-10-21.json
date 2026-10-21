@@ -1,11 +1,11 @@
 {
-  "date": "2026-10-14",
-  "timestamp": "2026-10-14T10:49:09.373Z",
+  "date": "2026-10-21",
+  "timestamp": "2026-10-21T10:48:56.249Z",
   "totals": {
-    "tracked": 580,
-    "unchanged": 532,
+    "tracked": 581,
+    "unchanged": 528,
     "updated": 0,
-    "failed": 48
+    "failed": 53
   },
   "updated": [],
   "failed": [
@@ -146,6 +146,10 @@
       "error": "permission denied for function tvtime_update_seasons"
     },
     {
+      "tvmaze_id": 60922,
+      "error": "Edge Function returned a non-2xx status code"
+    },
+    {
       "tvmaze_id": 820,
       "error": "permission denied for function tvtime_update_seasons"
     },
@@ -154,12 +158,20 @@
       "error": "permission denied for function tvtime_update_seasons"
     },
     {
+      "tvmaze_id": 75874,
+      "error": "Edge Function returned a non-2xx status code"
+    },
+    {
       "tvmaze_id": 158,
       "error": "permission denied for function tvtime_update_seasons"
     },
     {
       "tvmaze_id": 171,
       "error": "permission denied for function tvtime_update_seasons"
+    },
+    {
+      "tvmaze_id": 61473,
+      "error": "Edge Function returned a non-2xx status code"
     },
     {
       "tvmaze_id": 134,
@@ -198,7 +210,15 @@
       "error": "permission denied for function tvtime_update_seasons"
     },
     {
+      "tvmaze_id": 63610,
+      "error": "Edge Function returned a non-2xx status code"
+    },
+    {
       "tvmaze_id": 77055,
+      "error": "permission denied for function tvtime_update_seasons"
+    },
+    {
+      "tvmaze_id": 82915,
       "error": "permission denied for function tvtime_update_seasons"
     }
   ]
