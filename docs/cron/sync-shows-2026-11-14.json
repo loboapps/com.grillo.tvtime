@@ -1,11 +1,11 @@
 {
-  "date": "2026-11-07",
-  "timestamp": "2026-11-07T12:01:28.762Z",
+  "date": "2026-11-14",
+  "timestamp": "2026-11-14T12:35:51.180Z",
   "totals": {
-    "tracked": 583,
+    "tracked": 584,
     "unchanged": 534,
     "updated": 0,
-    "failed": 49
+    "failed": 50
   },
   "updated": [],
   "failed": [
@@ -136,6 +136,10 @@
     {
       "tvmaze_id": 1825,
       "error": "permission denied for function tvtime_update_seasons"
+    },
+    {
+      "tvmaze_id": 57056,
+      "error": "Edge Function returned a non-2xx status code"
     },
     {
       "tvmaze_id": 58846,
